@@ -17,7 +17,9 @@
     "import/no-cycle": "error",
     "eqeqeq": "error",
     "no-console": "error",
-    "unicorn/no-array-sort": "off"
+    "unicorn/no-array-sort": "off",
+    // Sequential awaits are deliberate in DB code and tests (ordering, pagination); not a perf concern here.
+    "no-await-in-loop": "off"
   },
   "overrides": [
     {

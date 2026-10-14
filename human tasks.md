@@ -16,7 +16,7 @@ Status legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial
 - Notes (agent): DONE 2026-10-14 — logged in as mulholo.
 - Notes:
 
-### [ ] H2. Create the GitHub repos and add the remote
+### [x] H2. Create the GitHub repos and add the remote
 - [x] Create `traitengineer` (this repo) on GitHub, and a **private** repo `traitengineer-archive` (used in M7).
 - Then: `git remote add origin git@github.com:<you>/traitengineer.git && git push -u origin main`
 - Tell me the owner/org name so I can fill in docs and workflows.
