@@ -1,0 +1,4166 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Trait Engineer API",
+    "version": "1.0.0",
+    "description": "Track psychological change targets and log evidence against them. All `/v1` routes need a session cookie, a session bearer token, or a personal access token (`Authorization: Bearer te_pat_...`)."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Personal access token (`te_pat_...`) or a session token"
+      },
+      "Cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "better-auth.session_token"
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "db": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "db"
+        ]
+      },
+      "ChangeTarget": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Default to action rather than over-planning"
+          },
+          "oldPattern": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Rewrite proposals three times before sending"
+          },
+          "desiredDefault": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Send the first good-enough version"
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Momentum matters more than polish for me"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "achieved",
+              "archived"
+            ]
+          },
+          "sortOrder": {
+            "type": "integer"
+          },
+          "archivedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "oldPattern",
+          "desiredDefault",
+          "why",
+          "status",
+          "sortOrder",
+          "archivedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "validation_failed",
+              "unauthenticated",
+              "forbidden",
+              "insufficient_scope",
+              "not_found",
+              "conflict",
+              "rate_limited",
+              "unknown_tool_type",
+              "internal_error"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code"
+        ],
+        "description": "RFC 9457 problem details"
+      },
+      "CreateChangeTarget": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Default to action rather than over-planning"
+          },
+          "oldPattern": {
+            "type": "string",
+            "maxLength": 5000,
+            "default": "",
+            "example": "Rewrite proposals three times before sending"
+          },
+          "desiredDefault": {
+            "type": "string",
+            "maxLength": 5000,
+            "default": "",
+            "example": "Send the first good-enough version"
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 5000,
+            "default": "",
+            "example": "Momentum matters more than polish for me"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "achieved"
+            ],
+            "default": "active"
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "UpdateChangeTarget": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Default to action rather than over-planning"
+          },
+          "oldPattern": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Rewrite proposals three times before sending"
+          },
+          "desiredDefault": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Send the first good-enough version"
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Momentum matters more than polish for me"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "achieved",
+              "archived"
+            ]
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        }
+      },
+      "ChangeTargetSummary": {
+        "type": "object",
+        "properties": {
+          "changeTargetId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "entries": {
+                "type": "integer"
+              },
+              "tools": {
+                "type": "integer"
+              },
+              "lastEntryAt": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "example": "2026-10-14T08:30:00.000Z"
+              },
+              "daysSinceLastEntry": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "entries",
+              "tools",
+              "lastEntryAt",
+              "daysSinceLastEntry"
+            ]
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToolSummary"
+            }
+          }
+        },
+        "required": [
+          "changeTargetId",
+          "timeZone",
+          "generatedAt",
+          "totals",
+          "tools"
+        ]
+      },
+      "ToolSummary": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "toolId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "evidence_log"
+                ]
+              },
+              "summary": {
+                "$ref": "#/components/schemas/EvidenceLogSummary"
+              }
+            },
+            "required": [
+              "toolId",
+              "name",
+              "type",
+              "summary"
+            ]
+          }
+        ]
+      },
+      "EvidenceLogSummary": {
+        "type": "object",
+        "properties": {
+          "totalEntries": {
+            "type": "integer"
+          },
+          "weeklyCounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "week": {
+                  "type": "string",
+                  "example": "2026-W42"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "week",
+                "count"
+              ]
+            }
+          },
+          "currentStreakDays": {
+            "type": "integer",
+            "description": "Consecutive days with an entry, ending today (or yesterday if nothing logged yet today)"
+          },
+          "daysSinceLastEntry": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "lastEntryAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "totalEntries",
+          "weeklyCounts",
+          "currentStreakDays",
+          "daysSinceLastEntry",
+          "lastEntryAt"
+        ]
+      },
+      "Tool": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "changeTargetId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "evidence_log"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Validated by the tool type's configSchema"
+          },
+          "sortOrder": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "changeTargetId",
+          "type",
+          "name",
+          "config",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateTool": {
+        "type": "object",
+        "properties": {
+          "changeTargetId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "evidence_log"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Defaults to the tool type's display name"
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "changeTargetId",
+          "type"
+        ]
+      },
+      "UpdateTool": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        }
+      },
+      "Entry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "toolId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "changeTargetId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "toolType": {
+            "type": "string",
+            "enum": [
+              "evidence_log"
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Validated by the tool type's payloadSchema"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "mobile",
+              "web",
+              "mcp",
+              "api"
+            ]
+          },
+          "clientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "toolId",
+          "changeTargetId",
+          "toolType",
+          "payload",
+          "occurredAt",
+          "source",
+          "clientId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateEntry": {
+        "type": "object",
+        "properties": {
+          "toolId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z",
+            "description": "When it happened; defaults to now"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "mobile",
+              "web",
+              "mcp",
+              "api"
+            ],
+            "default": "api"
+          },
+          "clientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Client-generated UUID; repeating a create with the same clientId is safe",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          }
+        },
+        "required": [
+          "toolId",
+          "payload",
+          "clientId"
+        ]
+      },
+      "UpdateEntry": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        }
+      },
+      "Reminder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "toolId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "changeTargetId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ReminderSchedule"
+          },
+          "rrule": {
+            "type": "string",
+            "description": "RFC 5545 RRULE compiled from the schedule (read-only)"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "nextFireAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "lastFiredAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "toolId",
+          "changeTargetId",
+          "schedule",
+          "rrule",
+          "timezone",
+          "title",
+          "body",
+          "enabled",
+          "nextFireAt",
+          "lastFiredAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ReminderSchedule": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "daily"
+                ]
+              },
+              "time": {
+                "type": "string",
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "example": "08:30"
+              }
+            },
+            "required": [
+              "type",
+              "time"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "weekdays"
+                ]
+              },
+              "time": {
+                "type": "string",
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "example": "08:30"
+              }
+            },
+            "required": [
+              "type",
+              "time"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "every_n_hours"
+                ]
+              },
+              "everyHours": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "example": "08:30"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "example": "08:30"
+              }
+            },
+            "required": [
+              "type",
+              "everyHours",
+              "start",
+              "end"
+            ]
+          }
+        ]
+      },
+      "CreateReminder": {
+        "type": "object",
+        "properties": {
+          "toolId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "changeTargetId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ReminderSchedule"
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Europe/London",
+            "description": "Defaults to the user's time zone"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "default": "Time to log some evidence"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 300,
+            "default": ""
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "schedule"
+        ]
+      },
+      "UpdateReminder": {
+        "type": "object",
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/ReminderSchedule"
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Europe/London"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "toolId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "changeTargetId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          }
+        }
+      },
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "ios",
+              "android",
+              "web"
+            ]
+          },
+          "deviceName": {
+            "type": "string"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "disabledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "deviceName",
+          "lastSeenAt",
+          "disabledAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RegisterDevice": {
+        "type": "object",
+        "properties": {
+          "expoPushToken": {
+            "type": "string",
+            "pattern": "^Expo(nent)?PushToken\\[[^\\]]+\\]$",
+            "example": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "ios",
+              "android",
+              "web"
+            ]
+          },
+          "deviceName": {
+            "type": "string",
+            "maxLength": 100,
+            "default": ""
+          }
+        },
+        "required": [
+          "expoPushToken",
+          "platform"
+        ]
+      },
+      "PersonalAccessToken": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "read",
+                "write"
+              ]
+            }
+          },
+          "lastUsedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "revokedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "scopes",
+          "lastUsedAt",
+          "revokedAt",
+          "createdAt"
+        ]
+      },
+      "CreatedPersonalAccessToken": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "read",
+                "write"
+              ]
+            }
+          },
+          "lastUsedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "revokedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "token": {
+            "type": "string",
+            "description": "Plaintext token. Shown once; store it now."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "scopes",
+          "lastUsedAt",
+          "revokedAt",
+          "createdAt",
+          "token"
+        ]
+      },
+      "CreatePersonalAccessToken": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Claude Code on laptop"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "read",
+              "write"
+            ],
+            "description": "`write` implies `read`"
+          }
+        },
+        "required": [
+          "name",
+          "scope"
+        ]
+      },
+      "Me": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUIDv7 identifier",
+            "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+          },
+          "email": {
+            "type": "string",
+            "description": "Owner's email (only returned to the authenticated owner)"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "read",
+                "write"
+              ]
+            },
+            "description": "Scopes of the credential used for this request"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "displayName",
+          "timezone",
+          "scopes",
+          "createdAt"
+        ]
+      },
+      "UpdateMe": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Europe/London"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        }
+      },
+      "Export": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "exportedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-14T08:30:00.000Z"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "timezone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "displayName",
+              "timezone"
+            ]
+          },
+          "changeTargets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChangeTarget"
+            }
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            }
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            }
+          },
+          "reminders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reminder"
+            }
+          }
+        },
+        "required": [
+          "version",
+          "exportedAt",
+          "user",
+          "changeTargets",
+          "tools",
+          "entries",
+          "reminders"
+        ],
+        "description": "Everything for the user. Never includes credentials or the email."
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Liveness and database reachability (no auth)",
+        "responses": {
+          "200": {
+            "description": "Healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unreachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/change-targets": {
+      "get": {
+        "summary": "List change targets",
+        "tags": [
+          "Change targets"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "paused",
+                "achieved",
+                "archived"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of change targets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ChangeTarget"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a change target",
+        "tags": [
+          "Change targets"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChangeTarget"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeTarget"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/change-targets/{id}": {
+      "get": {
+        "summary": "Get a change target",
+        "tags": [
+          "Change targets"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The change target",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeTarget"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a change target (partial)",
+        "tags": [
+          "Change targets"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChangeTarget"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeTarget"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Archive a change target",
+        "description": "Change targets are never hard-deleted: DELETE sets status to `archived`.",
+        "tags": [
+          "Change targets"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeTarget"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/change-targets/{id}/summary": {
+      "get": {
+        "summary": "Tool summaries and totals for a change target",
+        "tags": [
+          "Change targets"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 52
+            },
+            "required": false,
+            "name": "weeks",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeTargetSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tools": {
+      "get": {
+        "summary": "List tools",
+        "tags": [
+          "Tools"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": false,
+            "description": "UUIDv7 identifier",
+            "name": "changeTargetId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of tools",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Tool"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Attach a tool to a change target",
+        "description": "`config` is validated against the tool type's config schema; unknown types are rejected.",
+        "tags": [
+          "Tools"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTool"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tool"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tools/{id}": {
+      "get": {
+        "summary": "Get a tool",
+        "tags": [
+          "Tools"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tool",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tool"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a tool (partial; config is merged and revalidated)",
+        "tags": [
+          "Tools"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTool"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tool"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a tool (soft delete)",
+        "tags": [
+          "Tools"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Done"
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/entries": {
+      "get": {
+        "summary": "List entries, newest first",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": false,
+            "description": "UUIDv7 identifier",
+            "name": "changeTargetId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": false,
+            "description": "UUIDv7 identifier",
+            "name": "toolId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-10-14T08:30:00.000Z"
+            },
+            "required": false,
+            "name": "since",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-10-14T08:30:00.000Z"
+            },
+            "required": false,
+            "name": "until",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            },
+            "required": false,
+            "name": "tag",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Entry"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Log an entry (idempotent on clientId)",
+        "description": "`payload` is validated against the tool type's payload schema. Repeating a request with the same `clientId` returns the existing entry with status 200 instead of creating a duplicate.",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEntry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already existed (same clientId)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/entries/{id}": {
+      "get": {
+        "summary": "Get an entry",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update an entry (payload is merged and revalidated)",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEntry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an entry (soft delete)",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Done"
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reminders": {
+      "get": {
+        "summary": "List reminders",
+        "tags": [
+          "Reminders"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All reminders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Reminder"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a reminder from a schedule preset",
+        "tags": [
+          "Reminders"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReminder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reminder"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reminders/{id}": {
+      "patch": {
+        "summary": "Update a reminder (recomputes the next fire time)",
+        "tags": [
+          "Reminders"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReminder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reminder"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a reminder",
+        "tags": [
+          "Reminders"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Done"
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reminders/{id}/test": {
+      "post": {
+        "summary": "Send this reminder to all active devices now",
+        "tags": [
+          "Reminders"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Number of devices notified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "devices": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "devices"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/devices": {
+      "get": {
+        "summary": "List push devices",
+        "tags": [
+          "Devices"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Devices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Device"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Register or refresh a push device (upsert by Expo push token)",
+        "tags": [
+          "Devices"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDevice"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/devices/{id}": {
+      "delete": {
+        "summary": "Stop sending pushes to a device",
+        "tags": [
+          "Devices"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Done"
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tokens": {
+      "get": {
+        "summary": "List personal access tokens (never includes the token value)",
+        "tags": [
+          "Personal access tokens"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PersonalAccessToken"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a personal access token",
+        "description": "The plaintext `token` is returned once. Tokens cannot create other tokens; use a signed-in session.",
+        "tags": [
+          "Personal access tokens"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePersonalAccessToken"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created; store the token now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedPersonalAccessToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tokens/{id}": {
+      "delete": {
+        "summary": "Revoke a personal access token",
+        "tags": [
+          "Personal access tokens"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUIDv7 identifier",
+              "example": "01927a4e-6f0b-7160-bcce-23cb1342b381"
+            },
+            "required": true,
+            "description": "UUIDv7 identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Done"
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "summary": "The signed-in user",
+        "tags": [
+          "Me"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update time zone or display name",
+        "tags": [
+          "Me"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/export": {
+      "get": {
+        "summary": "Export everything (JSON or Markdown)",
+        "tags": [
+          "Export"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Cookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "markdown"
+              ],
+              "default": "json"
+            },
+            "required": false,
+            "name": "format",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Export"
+                }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient scope",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

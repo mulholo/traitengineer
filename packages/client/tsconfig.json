@@ -3,8 +3,13 @@
   "compilerOptions": {
     "outDir": ".tsbuild",
     "rootDir": ".",
-    "types": ["node"]
+    "types": ["node"],
+    "lib": ["es2023", "dom"]
   },
   "include": ["src", "test", "*.ts"],
-  "references": [{ "path": "../config" }]
+  "references": [
+    {
+      "path": "../config"
+    }
+  ]
 }
