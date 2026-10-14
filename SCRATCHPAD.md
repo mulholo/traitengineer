@@ -6,7 +6,7 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - [x] M0 Scaffold (local; CI green pending GitHub remote H2)
 - [x] M1 Domain and database
 - [x] M2 API and auth (PR #1 merged, main CI green)
-- [ ] M3 MCP
+- [x] M3 MCP (PR #2 merged after CI green)
 - [ ] M4 Mobile and web
 - [ ] M5 Notifications
 - [ ] M6 Deploy (needs human: Neon, Fly, DNS, EAS, Apple)
@@ -43,3 +43,9 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - Ruleset on main lacks required status check → PR #1 merged before CI finished (CI passed). Asked human to fix (H2c).
 - Local dev: `.env` (gitignored) has random BETTER_AUTH_SECRET; `pnpm db:seed` prints demo password.
 - Next: M3 MCP on branch feat/m3-mcp.
+
+### 2026-10-14 M3
+- MCP tools/prompts + OAuth (jwt + mcp plugins), Inspector CLI verified with PAT. PR #2 merged after waiting for CI.
+- Ruleset still lacks required status check (H2c follow-up) → I wait for `gh pr checks --watch` before merging.
+- Lost `human tasks.md` once via git pull after untracking; restored. Back it up before checkouts of old commits.
+- Next: M4 mobile + web on feat/m4-mobile-web.

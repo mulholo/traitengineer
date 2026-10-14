@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "import", "vitest"],
+  "plugins": ["typescript", "unicorn", "oxc", "import", "vitest", "react", "jsx-a11y"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -21,7 +21,15 @@
     // Sequential awaits are deliberate in DB code and tests (ordering, pagination); not a perf concern here.
     "no-await-in-loop": "off",
     // Vitest supports expect(value, message); the message makes loop assertions debuggable.
-    "vitest/valid-expect": ["error", { "maxArgs": 2 }]
+    "vitest/valid-expect": ["error", { "maxArgs": 2 }],
+    // New JSX transform: React does not need to be in scope.
+    "react/react-in-jsx-scope": "off",
+    // Expo's <StatusBar style="auto"> takes a string, not a style object.
+    "react/style-prop-object": ["error", { "allow": ["StatusBar"] }],
+    // Side-effect CSS imports (NativeWind's global.css) are intentional.
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    // React Native has no HTML tags; `role` is the only way to express landmarks.
+    "jsx-a11y/prefer-tag-over-role": "off"
   },
   "overrides": [
     {
@@ -41,6 +49,9 @@
     }
   ],
   "ignorePatterns": [
+    "apps/mobile/dist/**",
+    "apps/mobile/playwright-report/**",
+    "apps/mobile/test-results/**",
     "**/dist/**",
     "**/.tsbuild/**",
     "packages/client/src/generated/**",

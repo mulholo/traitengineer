@@ -10,6 +10,7 @@ import { authenticate, requestLogger, requireScopes, writeRateLimit } from "./ht
 import { onError, problem } from "./http/problem.ts";
 import { mountMcp, mountWellKnown } from "./mcp/mount.ts";
 import type { AppEnv } from "./http/types.ts";
+import { defaultWebDistDir, mountWeb } from "./http/web.ts";
 import type { Logger } from "./logger.ts";
 import { registerChangeTargetRoutes } from "./routes/change-targets.ts";
 import { registerDeviceRoutes } from "./routes/devices.ts";
@@ -100,6 +101,9 @@ export function createApp(deps: AppDeps) {
   });
   app.get("/openapi.json", (c) => c.json(buildOpenApiDocument(app)));
   app.get("/docs", Scalar({ url: "/openapi.json", pageTitle: "Trait Engineer API" }));
+
+  // Web app (Expo web export) for everything else, same origin as the API.
+  mountWeb(app, { dir: env.WEB_DIST_DIR ?? defaultWebDistDir, reserved: RESERVED_PREFIXES });
 
   app.notFound((c) => problem(c, "not_found", `No route for ${c.req.method} ${c.req.path}`));
   return app;

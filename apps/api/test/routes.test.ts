@@ -32,8 +32,10 @@ describe("public routes", () => {
     expect((await h.request("GET", "/health")).headers.get("x-request-id")).toBeTruthy();
   });
 
-  test("unknown routes are problem+json 404s", async () => {
-    const res = await h.request("GET", "/v2/nope");
+  test("unknown API routes are problem+json 404s (401 first when unauthenticated, so routes aren't enumerable)", async () => {
+    expect((await h.request("GET", "/v1/nope")).status).toBe(401);
+    const { token } = await h.session();
+    const res = await h.request("GET", "/v1/nope", { token });
     expect(res.status).toBe(404);
     expect(res.headers.get("content-type")).toBe("application/problem+json");
   });

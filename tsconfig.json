@@ -1,12 +1,29 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/config" },
-    { "path": "packages/contracts" },
-    { "path": "packages/core" },
-    { "path": "packages/db" },
-    { "path": "packages/mcp" },
-    { "path": "packages/client" },
-    { "path": "apps/api" }
+    {
+      "path": "packages/config"
+    },
+    {
+      "path": "packages/contracts"
+    },
+    {
+      "path": "packages/core"
+    },
+    {
+      "path": "packages/db"
+    },
+    {
+      "path": "packages/mcp"
+    },
+    {
+      "path": "packages/client"
+    },
+    {
+      "path": "apps/api"
+    },
+    {
+      "path": "apps/mobile"
+    }
   ]
 }
