@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Europe/London",
+  "rangeStrategy": "bump",
+  "packageRules": [
+    { "groupName": "all non-major dependencies", "matchUpdateTypes": ["minor", "patch"] },
+    {
+      "groupName": "expo sdk",
+      "matchPackageNames": ["expo", "expo-*", "react-native", "react", "react-dom", "jest-expo"]
+    },
+    { "groupName": "better-auth", "matchPackageNames": ["better-auth", "@better-auth/*"] }
+  ]
+}
