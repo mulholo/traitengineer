@@ -11,6 +11,8 @@ export function testEnv(overrides: Record<string, string> = {}): Env {
     NODE_ENV: "test",
     BETTER_AUTH_SECRET: TEST_SECRET,
     PUBLIC_URL: "http://localhost:3000",
+    // Deterministic: no web build unless a test provides one (a local `expo export` must not change results).
+    WEB_DIST_DIR: "/nonexistent-web-dist",
     ...overrides,
   });
 }
