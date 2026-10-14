@@ -5,7 +5,7 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 ## Milestone status
 - [x] M0 Scaffold (local; CI green pending GitHub remote H2)
 - [x] M1 Domain and database
-- [ ] M2 API and auth
+- [x] M2 API and auth (PR #1 merged, main CI green)
 - [ ] M3 MCP
 - [ ] M4 Mobile and web
 - [ ] M5 Notifications
@@ -36,3 +36,10 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - contracts/core/db done; 43 tests. `pnpm db:migrate` / `pnpm db:seed` verified against local PGlite (`.pglite/`).
 - TODO in M2: seed must also create a Better Auth credential account with a dev-only password (printed).
 - Next: M2 API and auth.
+
+### 2026-10-14 M2
+- Merged as PR #1. API 27 tests; live server verified with curl (needs dangerouslyDisableSandbox to bind ports).
+- `human tasks.md` untracked + gitignored per user request (local only).
+- Ruleset on main lacks required status check → PR #1 merged before CI finished (CI passed). Asked human to fix (H2c).
+- Local dev: `.env` (gitignored) has random BETTER_AUTH_SECRET; `pnpm db:seed` prints demo password.
+- Next: M3 MCP on branch feat/m3-mcp.
