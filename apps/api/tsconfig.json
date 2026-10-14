@@ -3,7 +3,13 @@
   "compilerOptions": {
     "outDir": ".tsbuild",
     "rootDir": ".",
-    "types": ["node"]
+    "types": ["node"],
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "lib": ["es2023", "dom"]
   },
   "include": ["src", "test", "*.ts"],
   "references": [
@@ -21,6 +27,9 @@
     },
     {
       "path": "../../packages/mcp"
+    },
+    {
+      "path": "../../packages/client"
     }
   ]
 }

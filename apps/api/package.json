@@ -7,15 +7,33 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "dev": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env --watch src/main.ts",
+    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/main.ts",
+    "seed": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/seed.ts",
+    "gen:openapi": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/gen-openapi.ts",
+    "user:create-owner": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/create-owner.ts",
+    "user:set-password": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/set-password.ts"
   },
   "dependencies": {
+    "@better-auth/expo": "^1.7.8",
+    "@better-auth/passkey": "^1.7.8",
+    "@hono/node-server": "^2.1.5",
+    "@hono/zod-openapi": "^1.6.3",
+    "@scalar/hono-api-reference": "^0.12.12",
     "@te/contracts": "workspace:*",
     "@te/core": "workspace:*",
     "@te/db": "workspace:*",
-    "@te/mcp": "workspace:*"
+    "@te/mcp": "workspace:*",
+    "better-auth": "^1.7.8",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.13",
+    "pino": "^10.4.0",
+    "uuid": "^14.0.3",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@te/client": "workspace:*",
     "@te/config": "workspace:*",
     "vitest": "^5.0.4"
   }
