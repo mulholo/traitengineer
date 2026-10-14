@@ -1,0 +1,39 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "//#typecheck": {
+      "inputs": [
+        "tsconfig.json",
+        "apps/*/tsconfig.json",
+        "packages/*/tsconfig.json",
+        "apps/*/src/**",
+        "apps/*/test/**",
+        "packages/*/src/**",
+        "packages/*/test/**",
+        "packages/config/*"
+      ],
+      "outputs": []
+    },
+    "//#lint": {},
+    "//#format:check": {},
+    "//#boundaries": {},
+    "test": {
+      "dependsOn": [],
+      "outputs": [],
+      "env": ["NODE_ENV"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "e2e": {
+      "dependsOn": ["build"],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

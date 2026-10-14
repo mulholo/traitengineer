@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.tsbuild/
+*.tsbuildinfo
+.turbo/
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+.expo/
+.pglite/
+playwright-report/
+test-results/
+ios/
+android/

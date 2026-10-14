@@ -1,0 +1,17 @@
+{
+  "extends": "@te/config/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": ".tsbuild",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["src", "test", "*.ts"],
+  "references": [
+    {
+      "path": "../config"
+    },
+    {
+      "path": "../contracts"
+    }
+  ]
+}

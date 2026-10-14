@@ -1,0 +1,19 @@
+{
+  "name": "@te/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@te/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@te/config": "workspace:*",
+    "vitest": "^5.0.4"
+  }
+}
