@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
+  "globalPassThroughEnv": ["TMPDIR"],
   "tasks": {
     "//#typecheck": {
       "inputs": [
@@ -29,7 +30,8 @@
     },
     "e2e": {
       "dependsOn": ["build"],
-      "outputs": ["playwright-report/**", "test-results/**"]
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "cache": false
     },
     "dev": {
       "cache": false,

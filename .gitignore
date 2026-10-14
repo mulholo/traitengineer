@@ -18,3 +18,5 @@ android/
 
 # Local-only notes for the human (not committed)
 human tasks.md
+.e2e-pglite/
+apps/mobile/expo-env.d.ts
