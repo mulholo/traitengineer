@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: 248 247 244;
+  --color-surface: 255 255 255;
+  --color-border: 226 223 216;
+  --color-text: 28 27 25;
+  --color-muted: 110 106 99;
+  --color-primary: 37 99 235;
+  --color-on-primary: 255 255 255;
+  --color-danger: 200 40 40;
+  --color-success: 22 130 70;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: 18 18 20;
+    --color-surface: 30 30 33;
+    --color-border: 55 55 60;
+    --color-text: 240 238 233;
+    --color-muted: 160 156 150;
+    --color-primary: 96 140 250;
+    --color-on-primary: 10 10 12;
+    --color-danger: 248 113 113;
+    --color-success: 74 200 120;
+  }
+}
