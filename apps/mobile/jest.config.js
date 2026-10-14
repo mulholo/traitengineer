@@ -2,6 +2,8 @@
 module.exports = {
   preset: "jest-expo",
   watchman: false,
+  // The first render pays for a cold Babel/NativeWind transform; CI runners can take well over 5s.
+  testTimeout: 30_000,
   cacheDirectory: "<rootDir>/node_modules/.cache/jest",
   setupFiles: ["<rootDir>/jest.setup.ts"],
   testMatch: ["<rootDir>/src/**/*.test.ts?(x)"],
