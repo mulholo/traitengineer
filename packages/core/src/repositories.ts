@@ -101,9 +101,97 @@ export interface EntryRepository {
   listForTools(userId: string, toolIds: string[]): Promise<Entry[]>;
 }
 
+export interface ReminderRecord {
+  id: string;
+  toolId: string | null;
+  changeTargetId: string | null;
+  rrule: string;
+  timezone: string;
+  title: string;
+  body: string;
+  enabled: boolean;
+  nextFireAt: string | null;
+  lastFiredAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NewReminder = Omit<ReminderRecord, "id" | "createdAt" | "updatedAt" | "lastFiredAt">;
+
+export interface ReminderRepository {
+  create(userId: string, data: NewReminder): Promise<ReminderRecord>;
+  get(userId: string, id: string): Promise<ReminderRecord | null>;
+  list(userId: string): Promise<ReminderRecord[]>;
+  update(userId: string, id: string, patch: Partial<NewReminder>): Promise<ReminderRecord | null>;
+  delete(userId: string, id: string): Promise<boolean>;
+}
+
+export interface DeviceRecord {
+  id: string;
+  expoPushToken: string;
+  platform: "ios" | "android" | "web";
+  deviceName: string;
+  lastSeenAt: string;
+  disabledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DeviceRepository {
+  /** Insert or re-own by push token; re-enables a disabled device and bumps last_seen_at. */
+  upsert(
+    userId: string,
+    data: Pick<DeviceRecord, "expoPushToken" | "platform" | "deviceName">,
+    at: string,
+  ): Promise<DeviceRecord>;
+  list(userId: string): Promise<DeviceRecord[]>;
+  disable(userId: string, id: string, at: string): Promise<boolean>;
+  /** Not user-scoped: push receipts only know the token. */
+  disableByToken(expoPushToken: string, at: string): Promise<void>;
+}
+
+export interface TokenRecord {
+  id: string;
+  userId: string;
+  name: string;
+  scopes: ("read" | "write")[];
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+}
+
+export interface TokenRepository {
+  create(
+    userId: string,
+    data: { name: string; tokenHash: string; scopes: ("read" | "write")[] },
+  ): Promise<TokenRecord>;
+  list(userId: string): Promise<TokenRecord[]>;
+  revoke(userId: string, id: string, at: string): Promise<boolean>;
+  /** Not user-scoped: this is how a bearer token is resolved to a user. Excludes revoked tokens. */
+  findActiveByHash(tokenHash: string): Promise<TokenRecord | null>;
+  touch(id: string, at: string): Promise<void>;
+}
+
+export interface LoginAttemptRecord {
+  key: string;
+  failures: number;
+  windowStartedAt: string;
+  lockedUntil: string | null;
+}
+
+export interface LoginAttemptRepository {
+  get(keys: string[]): Promise<LoginAttemptRecord[]>;
+  put(record: LoginAttemptRecord): Promise<void>;
+  clear(keys: string[]): Promise<void>;
+}
+
 export interface Repositories {
   users: UserRepository;
   changeTargets: ChangeTargetRepository;
   tools: ToolRepository;
   entries: EntryRepository;
+  reminders: ReminderRepository;
+  devices: DeviceRepository;
+  tokens: TokenRepository;
+  loginAttempts: LoginAttemptRepository;
 }
