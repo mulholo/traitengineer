@@ -1,6 +1,6 @@
 # Scratchpad (agent working notes)
 
-Read SPEC.md + this file + `human tasks.md` at the start of every turn; pick up the next unimplemented milestone.
+Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never commit it) at the start of every turn; pick up the next unimplemented milestone.
 
 ## Milestone status
 - [x] M0 Scaffold (local; CI green pending GitHub remote H2)
@@ -22,6 +22,9 @@ Read SPEC.md + this file + `human tasks.md` at the start of every turn; pick up 
 - Node 22.17 locally: TS in workspace deps needs `--experimental-strip-types`; Node 24 in CI/Docker — ADR 0022.
 - No flyctl / eas CLI installed globally.
 - Spec says "Biome" in two places but the stack table + user say oxlint → oxlint is used (ADR 0015, 0021).
+
+- Workflow from M2 on: branch per milestone (`feat/mN-...`), PR, `gh pr merge --squash --auto` after CI green (main ruleset, H2c).
+- CI run 38621192188 on main: green (M0 accepted). pnpm/action-setup@v4 warns about Node 20 — bump when v5 exists.
 
 ## Log
 

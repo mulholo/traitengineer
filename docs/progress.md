@@ -27,3 +27,35 @@ Milestone log: date, milestone, what shipped, anything deferred.
 - **Deferred:** the seed's dev-only password needs Better Auth's `accounts` table (M2). Reminder/device/token
   services land with their endpoints (M2/M5).
 - **Decisions:** ADR 0023 (evidence-log payload fields).
+
+## 2026-10-14 — M2 API and auth
+
+- **Shipped:** Hono app with every section 5 route via `@hono/zod-openapi` (`/openapi.json`, Scalar `/docs`),
+  RFC 9457 problem responses, request IDs in logs, cursor pagination, idempotent `POST /v1/entries` (201/200),
+  per-user write rate limit; Better Auth (email + password, passkeys, bearer, Expo plugin) with sign-up disabled,
+  durable per-email/per-IP sign-in throttle with exponential backoff, forced session revocation on password
+  change, `user:create-owner` / `user:set-password` CLIs, personal access tokens (hashed, scoped), test-only
+  session route; reminders (presets → RRULE, DST-safe next-fire computation), devices, export (JSON + Markdown);
+  generated `@te/client` (openapi-typescript + openapi-fetch), deterministic `pnpm gen:client`.
+- **Verified:** live server with curl (health, docs, 401/403 problems, sign-in → bearer, PAT scopes, summary,
+  Markdown export, cookie flags `HttpOnly; SameSite=Lax; Max-Age=30d`, logs carry user ID not email).
+- **Tests:** API 27 integration tests (every `/v1` operation 401s unauthenticated; section 6 auth tests;
+  REST cross-user isolation; generated client against the app), plus 15 DST/recurrence unit tests in core.
+- **Deferred:** passkey registration UI (M4); real Expo push sender (M5); MCP OAuth (M3).
+- **Decisions:** ADRs 0024 (auth tables + throttle), 0025 (owner bootstrap), 0026 (pg + uuid).
+
+## 2026-10-14 — M2 API and auth
+
+- **Shipped:** Hono app with every section 5 route via `@hono/zod-openapi` (`/openapi.json`, Scalar `/docs`),
+  RFC 9457 problem responses, request IDs in logs, cursor pagination, idempotent `POST /v1/entries` (201/200),
+  per-user write rate limit; Better Auth (email + password, passkeys, bearer, Expo plugin) with sign-up disabled,
+  durable per-email/per-IP sign-in throttle with exponential backoff, forced session revocation on password
+  change, `user:create-owner` / `user:set-password` CLIs, personal access tokens (hashed, scoped), test-only
+  session route; reminders (presets → RRULE, DST-safe next-fire computation), devices, export (JSON + Markdown);
+  generated `@te/client` (openapi-typescript + openapi-fetch), deterministic `pnpm gen:client`.
+- **Verified:** live server with curl (health, docs, 401/403 problems, sign-in → bearer, PAT scopes, summary,
+  Markdown export, cookie flags `HttpOnly; SameSite=Lax; Max-Age=30d`, logs carry user ID not email).
+- **Tests:** API integration tests (every `/v1` operation 401s unauthenticated; section 6 auth tests; REST
+  cross-user isolation; generated client against the app), plus DST/recurrence unit tests in core.
+- **Deferred:** passkey registration UI (M4); real Expo push sender (M5); MCP OAuth (M3).
+- **Decisions:** ADRs 0024 (auth tables + throttle), 0025 (owner bootstrap), 0026 (pg + uuid).

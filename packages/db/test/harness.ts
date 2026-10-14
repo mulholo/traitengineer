@@ -1,4 +1,4 @@
-import { createServices, type Services } from "@te/core";
+import { createRecordingPushSender, createServices, type PushMessage, type Services } from "@te/core";
 import { afterAll, beforeAll } from "vitest";
 import { createRepositories, createTestDb, insertUser, type DbHandle } from "../src/index.ts";
 
@@ -6,6 +6,7 @@ export interface Harness {
   handle: DbHandle;
   services: Services;
   clock: { now: Date };
+  pushed: PushMessage[];
   newUser(opts?: { timezone?: string }): Promise<string>;
 }
 
@@ -14,7 +15,9 @@ export function useHarness(): Harness {
   const h = { clock: { now: new Date("2026-10-14T12:00:00Z") } } as Harness;
   beforeAll(async () => {
     h.handle = await createTestDb();
-    h.services = createServices({ repos: createRepositories(h.handle.db), now: () => h.clock.now });
+    const push = createRecordingPushSender();
+    h.pushed = push.sent;
+    h.services = createServices({ repos: createRepositories(h.handle.db), now: () => h.clock.now, push });
     h.newUser = async (opts = {}) => (await insertUser(h.handle.db, opts)).id;
   });
   afterAll(async () => {

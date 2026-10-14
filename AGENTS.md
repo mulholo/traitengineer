@@ -17,7 +17,7 @@ agents over MCP. v1 is single-owner: one account, no sign-up. The full v1 spec i
 | `pnpm gen:client`        | Build `/openapi.json` from the app (no server) and regenerate `packages/client`                    |
 | `pnpm db:generate`       | `drizzle-kit generate` a migration from schema changes                                             |
 | `pnpm db:migrate`        | Apply migrations to `DATABASE_URL_DIRECT`                                                          |
-| `pnpm db:seed`           | Seed a demo user + data (refuses in production)                                                    |
+| `pnpm db:seed`           | Seed a demo user + data, printing a dev-only password (refuses in production)                      |
 | `pnpm user:create-owner` | Create the single owner account (password prompted on TTY)                                         |
 | `pnpm user:set-password` | Reset the owner password on the server                                                             |
 

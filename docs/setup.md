@@ -2,7 +2,7 @@
 
 Local development through M5 needs no accounts: PGlite replaces Neon, `pnpm db:seed` creates a local user
 with a dev-only password, and push uses an Expo dev build. The human-only steps below are needed for deploy
-(M6) and later. The agent tracks their status in `human tasks.md` at the repo root.
+(M6) and later. Status is tracked locally in `human tasks.md` at the repo root (gitignored, not committed).
 
 ## Local development
 

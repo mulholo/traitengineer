@@ -3,7 +3,7 @@ import { createServices } from "@te/core";
 import { eq } from "drizzle-orm";
 import type { Database } from "./client.ts";
 import { createRepositories } from "./repositories/index.ts";
-import { users } from "./schema/index.ts";
+import { accounts, users } from "./schema/index.ts";
 import { insertUser } from "./testing.ts";
 
 export const DEMO_EMAIL = "demo@traitengineer.local";
@@ -42,7 +42,10 @@ export interface SeedResult {
  * Demo user with two change targets, an evidence log each, and ~40 entries over the last 8 weeks.
  * No-op (returns created=false) if the demo user already exists.
  */
-export async function seedDemo(db: Database, opts: { now?: Date } = {}): Promise<SeedResult> {
+export async function seedDemo(
+  db: Database,
+  opts: { now?: Date; passwordHash?: string } = {},
+): Promise<SeedResult> {
   const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, DEMO_EMAIL));
   if (existing) return { userId: existing.id, created: false, changeTargetIds: [], entryCount: 0 };
 
@@ -53,6 +56,11 @@ export async function seedDemo(db: Database, opts: { now?: Date } = {}): Promise
     displayName: "Demo",
     timezone: "Europe/London",
   });
+  if (opts.passwordHash) {
+    await db
+      .insert(accounts)
+      .values({ userId, providerId: "credential", accountId: userId, password: opts.passwordHash });
+  }
 
   const action = await services.changeTargets.create(userId, {
     title: "Default to action rather than over-planning",
