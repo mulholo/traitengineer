@@ -21,6 +21,20 @@ Status legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial
 - Then: `git remote add origin git@github.com:<you>/traitengineer.git && git push -u origin main`
 - Tell me the owner/org name so I can fill in docs and workflows.
 - Notes: owner: mulholo. Please add origin etc yourself!
+- Notes (agent): remote `origin` = https://github.com/mulholo/traitengineer.git added. First push was rejected — see H2b.
+
+### [ ] H2b. Grant the gh token the `workflow` scope, so I can push `.github/workflows/*`
+GitHub said: "refusing to allow an OAuth App to create or update workflow `.github/workflows/ci.yml` without `workflow` scope".
+- Run: `! gh auth refresh -h github.com -s workflow` (it's interactive, so I can't do it myself).
+- Then tell me here (or just tick it) and I'll push `main` and check CI goes green.
+- Notes:
+
+### [ ] H2c. Repo settings for `traitengineer` (after the first push)
+- Protect `main`: require the `CI / check` status check, squash merge only.
+- Install the Renovate GitHub app for this repo (renovate.json is already committed).
+- Add the Actions secret `CLAUDE_CODE_OAUTH_TOKEN` if you want issues labelled `agent` picked up by Claude
+  (generate with `claude setup-token`).
+- Notes:
 
 ---
 
