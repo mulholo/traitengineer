@@ -74,3 +74,18 @@ Milestone log: date, milestone, what shipped, anything deferred.
   PAT (tools/list, tools/call `summarise_progress`, prompts/get `weekly_review`).
 - **Deferred:** the `/sign-in` and `/consent` web screens (M4); verifying the Claude custom connector in
   production (human step after M6); CIMD (ADR 0027).
+
+## 2026-10-14 — M4 Mobile and web
+
+- **Shipped:** Expo SDK 57 app (`apps/mobile`): sign-in (no sign-up/forgot links), OAuth consent screen,
+  Today, quick-log modal (autofocus, haptic, dismiss on save, Save always visible), targets list/new/detail
+  (12-week chart, timeline)/edit, entry view/edit/delete, reminders (presets only), settings (account, time
+  zone, password change, passkeys on web, sessions, devices, tokens, export via share sheet/download, sign
+  out). Responsive shell (tabs < 768px, sidebar ≥ 768px), NativeWind tokens with light/dark, 44pt targets.
+  Persisted query cache + persisted, resumable entry mutations; offline banner; home-screen quick action
+  (`/log/recent`). The API serves the web export from the same origin with SPA fallback.
+- **Tests:** jest-expo (tool UI coverage, quick-log form, offline queue incl. restart); Playwright e2e at 390px
+  and 1280px (sign-in → create target → log in three taps; offline logging + sync; reload persistence; OAuth
+  consent end to end; layout; 44px tap targets; every screen). Screenshots in `docs/screenshots/{narrow,wide}`.
+- **Deferred:** iOS simulator dev-build check (see scratchpad / human tasks); native passkeys (ADR 0029).
+- **Decisions:** ADRs 0028 (mobile implementation choices) and 0029 (passkeys on web first).
