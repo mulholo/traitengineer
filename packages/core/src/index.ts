@@ -1,2 +1,10 @@
-/** @te/core public surface. */
-export const packageName = "@te/core";
+export * from "./errors.ts";
+export * from "./cursor.ts";
+export * from "./repositories.ts";
+export * from "./validate.ts";
+export * from "./services/index.ts";
+export * from "./services/change-targets.ts";
+export * from "./services/tools.ts";
+export * from "./services/entries.ts";
+export * from "./services/summaries.ts";
+export * from "./services/users.ts";
