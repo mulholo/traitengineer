@@ -16,7 +16,7 @@
     "gen:client": "pnpm --filter @te/api gen:openapi && pnpm --filter @te/client gen",
     "db:generate": "pnpm --filter @te/db generate",
     "db:migrate": "pnpm --filter @te/db migrate",
-    "db:seed": "pnpm --filter @te/db seed",
+    "db:seed": "pnpm --filter @te/api seed",
     "user:create-owner": "pnpm --filter @te/api user:create-owner",
     "user:set-password": "pnpm --filter @te/api user:set-password",
     "prepare": "lefthook install || true"
