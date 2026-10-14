@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { createPgliteDb } from "@te/db";
+import { createTestDb } from "@te/db";
 import { buildOpenApiDocument } from "../app.ts";
 import { createContainerFromHandle } from "../container.ts";
 import { loadEnv } from "../env.ts";
@@ -12,9 +12,11 @@ const env = loadEnv({
   LOG_LEVEL: "silent",
   BETTER_AUTH_SECRET: "openapi-generation-only-openapi-generation-only",
 });
-const handle = await createPgliteDb();
+// Migrated in-memory DB so Better Auth's async init (which seeds OAuth resources) has its tables.
+const handle = await createTestDb();
 try {
-  const { app } = createContainerFromHandle(env, handle);
+  const { app, auth } = createContainerFromHandle(env, handle);
+  await auth.$context;
   const doc = buildOpenApiDocument(app);
   writeFileSync(out, `${JSON.stringify(doc, null, 2)}\n`);
   console.log(`Wrote ${out} (${Object.keys(doc.paths ?? {}).length} paths)`);
