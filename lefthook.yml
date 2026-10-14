@@ -4,7 +4,7 @@ pre-commit:
   commands:
     format:
       glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,md,yml,yaml}"
-      run: pnpm exec oxfmt {staged_files} && git add {staged_files}
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
     lint:
       glob: "*.{ts,tsx,js,mjs,cjs}"
