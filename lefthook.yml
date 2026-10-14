@@ -1,0 +1,15 @@
+# Git hooks. Installed by `pnpm install` (the `prepare` script).
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,md,yml,yaml}"
+      run: pnpm exec oxfmt {staged_files} && git add {staged_files}
+      stage_fixed: true
+    lint:
+      glob: "*.{ts,tsx,js,mjs,cjs}"
+      run: pnpm exec oxlint --deny-warnings {staged_files}
+commit-msg:
+  commands:
+    conventional:
+      run: 'grep -qE "^(feat|fix|chore|docs|refactor|test|build|ci|perf|style|revert)(\([a-z0-9/-]+\))?!?: .+" {1} || (echo "Commit message must follow Conventional Commits (e.g. feat(api): add entries route)"; exit 1)'

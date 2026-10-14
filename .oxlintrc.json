@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "vitest"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/ban-ts-comment": [
+      "error",
+      { "ts-ignore": true, "ts-expect-error": "allow-with-description" }
+    ],
+    "typescript/consistent-type-imports": "error",
+    "import/no-default-export": "error",
+    "import/no-cycle": "error",
+    "eqeqeq": "error",
+    "no-console": "error",
+    "unicorn/no-array-sort": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/vitest.config.ts",
+        "**/drizzle.config.ts",
+        "**/playwright.config.ts",
+        "apps/mobile/app/**",
+        "apps/mobile/*.config.*",
+        "apps/mobile/*.js"
+      ],
+      "rules": { "import/no-default-export": "off" }
+    },
+    {
+      "files": ["**/scripts/**", "**/cli/**", "**/*.test.ts", "**/test/**"],
+      "rules": { "no-console": "off" }
+    }
+  ],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/.tsbuild/**",
+    "packages/client/src/generated/**",
+    "packages/db/migrations/**",
+    "**/.expo/**"
+  ]
+}

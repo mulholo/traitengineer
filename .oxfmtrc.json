@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 110,
+  "ignorePatterns": [
+    "packages/client/src/generated/**",
+    "packages/db/migrations/**",
+    "docs/specs/**",
+    "SPEC.md",
+    "SCRATCHPAD.md",
+    "human tasks.md",
+    "pnpm-lock.yaml"
+  ]
+}
