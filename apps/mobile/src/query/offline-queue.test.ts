@@ -22,13 +22,17 @@ const input: CreateEntryInput = {
   source: "mobile",
 };
 
+const clients: { clear(): void }[] = [];
 afterEach(() => {
   onlineManager.setOnline(true);
   posted.length = 0;
+  // Clearing drops GC timers so Jest workers exit cleanly.
+  for (const c of clients.splice(0)) c.clear();
 });
 
 test("an entry logged offline is paused, optimistically shown, and sent once on reconnect", async () => {
   const client = createQueryClient();
+  clients.push(client);
   client.setQueryData(["entries", {}], { items: [], nextCursor: null });
   onlineManager.setOnline(false);
 
@@ -50,6 +54,7 @@ test("an entry logged offline is paused, optimistically shown, and sent once on 
 
 test("a paused entry survives an app restart (dehydrate → hydrate) and replays with the same clientId", async () => {
   const before = createQueryClient();
+  clients.push(before);
   onlineManager.setOnline(false);
   void before
     .getMutationCache()
@@ -62,6 +67,7 @@ test("a paused entry survives an app restart (dehydrate → hydrate) and replays
 
   // "Restart": a fresh client with the same defaults restores the paused mutation and resumes it.
   const after = createQueryClient();
+  clients.push(after);
   hydrate(after, persisted);
   onlineManager.setOnline(true);
   await after.resumePausedMutations();
