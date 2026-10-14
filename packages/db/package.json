@@ -7,14 +7,24 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate": "drizzle-kit generate",
+    "migrate": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli/migrate.ts",
+    "seed": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli/seed.ts"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "@te/contracts": "workspace:*",
-    "@te/core": "workspace:*"
+    "@te/core": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1",
+    "uuid": "^14.0.3",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@te/config": "workspace:*",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
     "vitest": "^5.0.4"
   }
 }
