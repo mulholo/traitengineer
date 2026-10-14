@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
+import { sql } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { drizzle as drizzleNodePg } from "drizzle-orm/node-postgres";
 import { migrate as migrateNodePg } from "drizzle-orm/node-postgres/migrator";
@@ -45,6 +46,12 @@ export async function migrateDb(handle: DbHandle): Promise<void> {
   } else {
     await migrateNodePg(handle.db as unknown as Parameters<typeof migrateNodePg>[0], { migrationsFolder });
   }
+}
+
+/** True when the database answers `select 1`. */
+export async function pingDb(handle: DbHandle): Promise<boolean> {
+  await handle.db.execute(sql`select 1`);
+  return true;
 }
 
 /** Fresh in-memory PGlite with all migrations applied. Used by every integration test. */

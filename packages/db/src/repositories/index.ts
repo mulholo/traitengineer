@@ -3,6 +3,12 @@ import { and, desc, eq, gte, inArray, isNull, lte, max, sql, type SQL } from "dr
 import type { Database } from "../client.ts";
 import { changeTargets, entries, tools, users } from "../schema/index.ts";
 import { toChangeTarget, toEntry, toTool, toUser } from "./mappers.ts";
+import {
+  createDeviceRepository,
+  createLoginAttemptRepository,
+  createReminderRepository,
+  createTokenRepository,
+} from "./support.ts";
 
 /** Drizzle implementations of the core repository ports. Every query is scoped by user_id. */
 export function createRepositories(db: Database): Repositories {
@@ -202,5 +208,9 @@ export function createRepositories(db: Database): Repositories {
         return rows.map(toEntry);
       },
     },
+    reminders: createReminderRepository(db),
+    devices: createDeviceRepository(db),
+    tokens: createTokenRepository(db),
+    loginAttempts: createLoginAttemptRepository(db),
   };
 }

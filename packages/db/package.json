@@ -9,8 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "generate": "drizzle-kit generate",
-    "migrate": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli/migrate.ts",
-    "seed": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli/seed.ts"
+    "migrate": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli/migrate.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.10",
