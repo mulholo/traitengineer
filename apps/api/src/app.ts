@@ -8,6 +8,7 @@ import { mountAuth, mountTestSession } from "./auth/routes.ts";
 import type { Env } from "./env.ts";
 import { authenticate, requestLogger, requireScopes, writeRateLimit } from "./http/middleware.ts";
 import { onError, problem } from "./http/problem.ts";
+import { mountMcp, mountWellKnown } from "./mcp/mount.ts";
 import type { AppEnv } from "./http/types.ts";
 import type { Logger } from "./logger.ts";
 import { registerChangeTargetRoutes } from "./routes/change-targets.ts";
@@ -26,6 +27,7 @@ export interface AppDeps {
   logger: Logger;
   checkDb: () => Promise<boolean>;
   now?: () => number;
+  nowDate?: () => Date;
 }
 
 export const OPENAPI_INFO = {
@@ -68,6 +70,8 @@ export function createApp(deps: AppDeps) {
   registerHealthRoute(app, deps.checkDb);
   mountAuth(app, { auth, services, env });
   if (env.NODE_ENV === "test") mountTestSession(app, { auth });
+  mountWellKnown(app, { auth });
+  mountMcp(app, { auth, services, env, ...(deps.nowDate ? { now: deps.nowDate } : {}) });
 
   // Authenticated REST API
   app.use(

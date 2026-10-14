@@ -12,6 +12,8 @@ beforeEach(async () => {
     testEnv({ NODE_ENV: "production", DATABASE_URL: "postgres://unused", LOG_LEVEL: "silent" }),
     handle,
   );
+  // Let Better Auth finish its async init (it seeds OAuth resources) before a test can close the DB.
+  await c.auth.$context;
 });
 afterEach(async () => handle.close());
 

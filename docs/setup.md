@@ -98,4 +98,22 @@ Install the TestFlight build on your iPhone, sign in, and allow notifications wh
 
 ## Using the MCP server locally
 
-Filled in during M3 (Claude Code over HTTP with a personal access token; MCP Inspector against local dev).
+1. Start the API: `pnpm db:seed` (note the printed dev password) then `pnpm --filter @te/api dev`.
+2. Create a personal access token: sign in to the web app and use Settings → Tokens (M4), or with curl:
+
+   ```sh
+   TOKEN=$(curl -s -X POST localhost:3000/api/auth/sign-in/email -H 'content-type: application/json' \
+     -d '{"email":"demo@traitengineer.local","password":"<dev password>"}' | jq -r .token)
+   curl -s -X POST localhost:3000/v1/tokens -H "authorization: Bearer $TOKEN" \
+     -H 'content-type: application/json' -d '{"name":"claude code","scope":"write"}' | jq -r .token
+   ```
+
+3. **Claude Code:** `claude mcp add --transport http traitengineer http://localhost:3000/mcp --header "Authorization: Bearer te_pat_..."`
+   (for production use your `PUBLIC_URL` instead of localhost).
+4. **MCP Inspector (UI):** `npx @modelcontextprotocol/inspector`, choose transport "Streamable HTTP", URL
+   `http://localhost:3000/mcp`, and add the header `Authorization: Bearer te_pat_...`.
+   **CLI:** `npx @modelcontextprotocol/inspector --cli http://localhost:3000/mcp --transport http --header "Authorization: Bearer te_pat_..." --method tools/list`
+   (needs Node ≥ 22.19).
+
+OAuth (used by Claude custom connectors) needs no token: the client discovers
+`/.well-known/oauth-protected-resource/mcp`, registers itself, and sends you to `/sign-in` and `/consent`.

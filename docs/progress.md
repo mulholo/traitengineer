@@ -59,3 +59,18 @@ Milestone log: date, milestone, what shipped, anything deferred.
   cross-user isolation; generated client against the app), plus DST/recurrence unit tests in core.
 - **Deferred:** passkey registration UI (M4); real Expo push sender (M5); MCP OAuth (M3).
 - **Decisions:** ADRs 0024 (auth tables + throttle), 0025 (owner bootstrap), 0026 (pg + uuid).
+
+## 2026-10-14 — M3 MCP
+
+- **Shipped:** `@te/mcp` with 7 task-shaped tools (4 read, 3 write), `weekly_review` and `define_change_target`
+  prompts, and server instructions; core `summaries.progress()` (per-target weekly counts, streaks, days since
+  last entry, the user's own words); `/mcp` mounted as stateless Streamable HTTP; Better Auth `jwt()` + `mcp()`
+  OAuth 2.1 provider with dynamic client registration and PKCE; `/.well-known/oauth-protected-resource[/mcp]`
+  and `/.well-known/oauth-authorization-server[/api/auth]`; 401 + `WWW-Authenticate` with resource metadata;
+  PAT or OAuth bearer on `/mcp`; scope enforcement on write tools.
+- **Verified:** in-memory SDK client tests for every tool (scopes, validation errors, cross-user isolation,
+  prompts); SDK Streamable HTTP client against the app with PATs; scripted OAuth flow (discovery → DCR →
+  authorize with PKCE → consent → token → MCP call); **MCP Inspector CLI** against a live local server with a
+  PAT (tools/list, tools/call `summarise_progress`, prompts/get `weekly_review`).
+- **Deferred:** the `/sign-in` and `/consent` web screens (M4); verifying the Claude custom connector in
+  production (human step after M6); CIMD (ADR 0027).

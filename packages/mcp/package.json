@@ -10,11 +10,14 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@te/contracts": "workspace:*",
-    "@te/core": "workspace:*"
+    "@te/core": "workspace:*",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@te/config": "workspace:*",
+    "@te/db": "workspace:*",
     "vitest": "^5.0.4"
   }
 }

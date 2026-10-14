@@ -25,7 +25,7 @@ export function createContainerFromHandle(
     auth,
     logger,
     checkDb,
-    ...(opts.now ? { now: () => opts.now!().getTime() } : {}),
+    ...(opts.now ? { now: () => opts.now!().getTime(), nowDate: opts.now } : {}),
   });
   return { env, logger, handle, services, auth, app, close: () => handle.close() };
 }
