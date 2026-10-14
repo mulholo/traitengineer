@@ -15,3 +15,6 @@ playwright-report/
 test-results/
 ios/
 android/
+
+# Local-only notes for the human (not committed)
+human tasks.md
