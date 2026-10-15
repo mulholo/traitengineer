@@ -1,0 +1,15 @@
+# EAS Workflow: build an iOS simulator app and run the Maestro flow against it (optional; not part of CI).
+# Run with: npx eas-cli workflow:run .eas/workflows/e2e.yml   (needs the EAS project, docs/setup.md step 7)
+name: e2e
+jobs:
+  build_simulator:
+    type: build
+    params:
+      platform: ios
+      profile: e2e
+  maestro:
+    needs: [build_simulator]
+    type: maestro
+    params:
+      build_id: ${{ needs.build_simulator.outputs.build_id }}
+      flow_path: [".maestro/sign-in-create-log.yaml"]
