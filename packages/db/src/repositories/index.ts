@@ -6,6 +6,7 @@ import { toChangeTarget, toEntry, toTool, toUser } from "./mappers.ts";
 import {
   createDeviceRepository,
   createLoginAttemptRepository,
+  createPushTicketRepository,
   createReminderRepository,
   createTokenRepository,
 } from "./support.ts";
@@ -212,5 +213,6 @@ export function createRepositories(db: Database): Repositories {
     devices: createDeviceRepository(db),
     tokens: createTokenRepository(db),
     loginAttempts: createLoginAttemptRepository(db),
+    pushTickets: createPushTicketRepository(db),
   };
 }

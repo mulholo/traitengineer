@@ -46,6 +46,11 @@
     {
       "files": ["**/scripts/**", "**/cli/**", "**/*.test.ts", "**/test/**"],
       "rules": { "no-console": "off" }
+    },
+    {
+      // The app has no logging backend in v1 (Sentry later); warnings go to the device console.
+      "files": ["apps/mobile/**"],
+      "rules": { "no-console": ["error", { "allow": ["warn", "error"] }] }
     }
   ],
   "ignorePatterns": [

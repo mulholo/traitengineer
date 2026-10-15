@@ -28,6 +28,7 @@ export default function RootLayout() {
             <Stack.Screen name="(app)" />
             <Stack.Screen name="sign-in" />
             <Stack.Screen name="consent" />
+            <Stack.Screen name="notifications" />
             <Stack.Screen name="log/[toolId]" options={{ presentation: "modal" }} />
           </Stack>
         </AuthProvider>

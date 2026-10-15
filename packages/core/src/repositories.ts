@@ -124,6 +124,17 @@ export interface ReminderRepository {
   list(userId: string): Promise<ReminderRecord[]>;
   update(userId: string, id: string, patch: Partial<NewReminder>): Promise<ReminderRecord | null>;
   delete(userId: string, id: string): Promise<boolean>;
+  /** Worker only (not user-scoped): enabled reminders with next_fire_at <= now, oldest first. */
+  listDue(now: string, limit: number): Promise<(ReminderRecord & { userId: string })[]>;
+  /**
+   * Compare-and-set: move a reminder to its next occurrence only if `next_fire_at` still equals `expected`.
+   * Returns false if another dispatcher already advanced it, which is what makes delivery exactly-once.
+   */
+  advance(
+    id: string,
+    expected: string,
+    next: { nextFireAt: string | null; lastFiredAt: string },
+  ): Promise<boolean>;
 }
 
 export interface DeviceRecord {
@@ -172,6 +183,13 @@ export interface TokenRepository {
   touch(id: string, at: string): Promise<void>;
 }
 
+export interface PushTicketRepository {
+  record(tickets: { userId: string; ticketId: string; expoPushToken: string }[], at: string): Promise<void>;
+  /** Tickets with no receipt check yet, created before `before`. */
+  listUnchecked(before: string, limit: number): Promise<{ ticketId: string; expoPushToken: string }[]>;
+  markChecked(ticketIds: string[], at: string): Promise<void>;
+}
+
 export interface LoginAttemptRecord {
   key: string;
   failures: number;
@@ -194,4 +212,5 @@ export interface Repositories {
   devices: DeviceRepository;
   tokens: TokenRepository;
   loginAttempts: LoginAttemptRepository;
+  pushTickets: PushTicketRepository;
 }

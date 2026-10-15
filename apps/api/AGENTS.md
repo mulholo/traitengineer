@@ -14,6 +14,10 @@ Hono server and composition root: `/v1` REST, `/mcp`, `/api/auth` (Better Auth),
 - **MCP:** `src/mcp/mount.ts` mounts `@te/mcp` on `/mcp` (stateless Streamable HTTP, JSON responses, one server
   per request) and the `/.well-known/*` OAuth discovery routes. Callers authenticate with a PAT or an OAuth
   access token verified locally against our JWKS (issuer `${PUBLIC_URL}/api/auth`, audience `${PUBLIC_URL}/mcp`).
+- **Jobs:** `src/jobs/worker.ts` starts pg-boss (Postgres via `DATABASE_URL_DIRECT` in production, PGlite
+  locally) when `ROLE=worker|all`, and schedules `reminders.dispatch` (every minute) and `push.receipts` (every
+  15 minutes). Handlers only call `services.notifications`; delivery rules live in core (ADR 0030).
+- **Push:** `src/push/expo.ts` implements the core `PushSender` with `expo-server-sdk`.
 - **CLIs (`src/cli/`):** `create-owner`, `set-password` (TTY password prompt), `seed` (dev-only password printed),
   `gen-openapi` (writes `packages/client/openapi.json` without a server).
 - **Layout:** `src/routes/` one file per resource; `src/env.ts` Zod env schema (fail fast at boot).
