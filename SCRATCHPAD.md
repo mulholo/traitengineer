@@ -10,8 +10,8 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - [x] M4 Mobile and web (PR #3; iOS 27 simulator verified in M5)
 - [x] M5 Notifications (PR #4; real-device push = human H15)
 - [~] M6 Deploy: artifacts merged (PR #5, CI boots image); needs human H3–H8, H10 to go live
-- [~] M7 Resilience: code done on feat/m7-resilience; first real archive commit needs H13
-- [ ] M8 Preview environments (optional)
+- [~] M7 Resilience: merged (PR #6); first real archive commit needs H13
+- [~] M8 Preview environments: workflow on feat/m8-previews; needs Neon API key + Fly
 
 ## Environment notes
 - Node v22.17.1, pnpm 10.24.0. Sandbox blocks writes to ~/.npm → use `npm_config_cache=$TMPDIR/npm-cache` for `npm view`.
@@ -57,3 +57,7 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
   sandbox: port binding / Xcode / expo install need dangerouslyDisableSandbox; pnpm store /tmp/claude-501/pnpm-store.
 - Simulator: API on :3000 + Metro on :8081 started in background this session (kill when done).
 - Next: M6 artifacts (Dockerfile, fly.toml, deploy.yml verified via CI docker job), then M7 (export done; archive job + restore).
+
+### 2026-10-15 M6–M8
+- M6 merged (#5) with CI docker build+boot; M7 merged (#6); Sentry merged (#7); M8 workflow prepared.
+- Everything left needs human accounts: H3–H13 (Neon, Fly, DNS, secrets, EAS, Apple, Sentry, archive token), H15 device push.

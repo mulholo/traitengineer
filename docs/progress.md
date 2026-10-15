@@ -137,3 +137,9 @@ Milestone log: date, milestone, what shipped, anything deferred.
   Sentry org/project exist (human task H9).
 - **Tests:** 500s reported with request/user IDs and no internals in the response; domain errors not reported;
   reporter is a no-op without a DSN.
+
+## 2026-10-15 — M8 Preview environments (prepared; optional)
+
+- **Shipped:** `preview.yml` (Neon branch per PR, Fly preview app with per-app secrets, migrations via release
+  command, health check, EAS update on the preview channel, sticky PR comment; teardown on close), docs.
+- **Waiting on human:** `NEON_API_KEY`, `NEON_PROJECT_ID` (and Fly/EAS from M6). Until then the workflow skips.

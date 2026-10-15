@@ -1,0 +1,113 @@
+name: Preview
+
+# Optional (M8): a throwaway environment per PR — Neon branch (copy of main's data, so the owner can sign in
+# with their normal password), a Fly app, and an EAS update on the preview channel. Torn down on close.
+# Skips itself until NEON_API_KEY, NEON_PROJECT_ID and FLY_API_TOKEN exist.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  APP: ${{ vars.FLY_APP || 'traitengineer' }}-pr-${{ github.event.pull_request.number }}
+  BRANCH: preview/pr-${{ github.event.pull_request.number }}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.gate.outputs.enabled }}
+    steps:
+      - id: gate
+        run: |
+          if [ -n "${{ secrets.NEON_API_KEY }}" ] && [ -n "${{ secrets.NEON_PROJECT_ID }}" ] && [ -n "${{ secrets.FLY_API_TOKEN }}" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Preview environments not configured (docs/setup.md, M8); skipping."; echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - name: Neon branch for this PR
+        id: neon
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch_name: ${{ env.BRANCH }}
+          parent_branch: main
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Create Fly app and set secrets
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          DB_URL: ${{ steps.neon.outputs.db_url }}
+          DB_URL_POOLED: ${{ steps.neon.outputs.db_url_pooled }}
+        run: |
+          flyctl status --app "$APP" >/dev/null 2>&1 || flyctl apps create "$APP" --org "${{ vars.FLY_ORG || 'personal' }}"
+          flyctl secrets set --app "$APP" --stage \
+            DATABASE_URL="$DB_URL_POOLED" DATABASE_URL_DIRECT="$DB_URL" \
+            PUBLIC_URL="https://$APP.fly.dev" \
+            BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
+      - name: Deploy (release command runs migrations on the branch)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --app "$APP" --remote-only --ha=false
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 20); do curl -fs "https://$APP.fly.dev/health" | grep -q '"db":"ok"' && break; sleep 6; done
+          curl -fsS "https://$APP.fly.dev/health"
+      - name: EAS update on the preview channel
+        if: ${{ vars.EAS_PROJECT_ID != '' }}
+        id: eas
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+          EXPO_PUBLIC_API_URL: https://${{ env.APP }}.fly.dev
+        run: |
+          corepack enable && pnpm install --frozen-lockfile
+          cd apps/mobile
+          npx eas-cli@latest update --channel preview --message "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}" --non-interactive --json > update.json
+          echo "group=$(node -e "console.log(require('./update.json')[0]?.group ?? '')")" >> "$GITHUB_OUTPUT"
+      - uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: preview
+          message: |
+            ### Preview environment
+            - Web + API: https://${{ env.APP }}.fly.dev (sign in with your usual owner account; data is a Neon branch of main)
+            - API docs: https://${{ env.APP }}.fly.dev/docs · MCP: `https://${{ env.APP }}.fly.dev/mcp`
+            ${{ steps.eas.outputs.group && format('- iOS: EAS update group `{0}` on the `preview` channel (open it in a preview build)', steps.eas.outputs.group) || '- iOS: EAS not configured yet' }}
+
+            Torn down automatically when this PR is closed.
+
+  teardown:
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Delete Fly app
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl apps destroy "$APP" --yes || echo "App already gone"
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch: ${{ env.BRANCH }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+      - uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: preview
+          message: "### Preview environment\nTorn down (Fly app and Neon branch deleted)."

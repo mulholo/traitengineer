@@ -84,3 +84,17 @@ docker build -t traitengineer .
 docker run --rm -p 8080:8080 -e NODE_ENV=development -e BETTER_AUTH_SECRET="$(openssl rand -base64 32)" \
   -e PUBLIC_URL=http://localhost:8080 traitengineer      # PGlite inside the container; open http://localhost:8080
 ```
+
+## Preview environments (optional, M8)
+
+`.github/workflows/preview.yml` gives each PR its own environment once `NEON_API_KEY`, `NEON_PROJECT_ID` and
+`FLY_API_TOKEN` are set:
+
+- a Neon branch `preview/pr-<n>` of `main` (so the owner signs in with their normal password),
+- a Fly app `<FLY_APP>-pr-<n>` deployed from the PR (migrations run on the branch, so schema changes are tested
+  against a copy of real data),
+- an EAS update on the `preview` channel pointed at that API (when `EAS_PROJECT_ID` is set),
+- a sticky PR comment with the links.
+
+Closing the PR deletes the Fly app and the Neon branch. Previews use real data copied from production:
+treat their URLs as private.
