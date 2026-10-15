@@ -42,6 +42,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     ["expo-notifications", { defaultChannel: "reminders" }],
+    // iOS 27 requires the UIScene life cycle (see the plugin for details).
+    "./plugins/with-scene-lifecycle",
   ],
   experiments: { typedRoutes: false },
 });

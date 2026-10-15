@@ -14,6 +14,12 @@ output) is served by `@te/api` from the same origin, so web uses the session coo
   callbacks to `useLogEntry()` — they replace the defaults. `SyncBanner` shows "n entries waiting to sync".
 - **Auth:** native stores the Better Auth session token in `expo-secure-store` and sends it as a bearer token;
   web uses the httpOnly cookie. Passkeys are web-only in v1 (ADR 0029).
+- **Notifications (native only):** `src/notifications/` registers the "log_evidence" category ("Log now"),
+  refreshes the Expo push token via `POST /v1/devices` on every start, routes taps (cold start and foreground)
+  to the deep link (`traitengineer://log/<toolId>` → `/log/<toolId>`), and `app/notifications.tsx` explains
+  notifications once after first sign-in before iOS asks. Needs an EAS project ID for push tokens.
+- **iOS 27:** `plugins/with-scene-lifecycle.js` adopts the UIScene life cycle (ADR 0030). `ios/` is generated
+  by `expo prebuild`; never edit it by hand.
 - **Platform code:** `*.native.ts` / `*.ts` (web) pairs in `src/platform/` and `src/auth/passkey*`.
 - **Tools:** `src/tools/<type>/{QuickLogForm,EntryCard}.tsx`, registered in `src/tools/index.ts` as a complete
   `Record<ToolType, ToolUi>` (typecheck fails if a registry type has no UI).

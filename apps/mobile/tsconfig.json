@@ -10,8 +10,10 @@
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["jest", "node"],
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["app", "src", "e2e", "*.ts", "nativewind-env.d.ts", "expo-env.d.ts"],
+  "include": ["app", "src", "e2e", "*.ts", "nativewind-env.d.ts"],
   "exclude": ["node_modules", "dist"]
 }
