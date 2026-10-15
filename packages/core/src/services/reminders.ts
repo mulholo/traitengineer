@@ -7,7 +7,7 @@ import {
   type UpdateReminder,
 } from "@te/contracts";
 import { NotFoundError, ValidationError } from "../errors.ts";
-import type { PushSender } from "../push.ts";
+import { LOG_CATEGORY, type PushSender } from "../push.ts";
 import type { NewReminder, ReminderRecord } from "../repositories.ts";
 import { nextOccurrence, rruleToSchedule, scheduleToRrule } from "../schedule.ts";
 import { compact, parseOrThrow } from "../validate.ts";
@@ -121,7 +121,7 @@ export function createReminderService({ repos, now }: ServiceDeps, push: PushSen
             title: r.title,
             body: r.body,
             data: { url: reminderUrl(r), reminderId: r.id, test: true },
-            categoryId: "log_evidence",
+            categoryId: LOG_CATEGORY,
           })),
         );
       }

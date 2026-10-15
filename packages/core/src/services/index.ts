@@ -5,6 +5,7 @@ import { createDeviceService } from "./devices.ts";
 import { createEntryService } from "./entries.ts";
 import { createExportService } from "./export.ts";
 import { createLoginThrottle, type LoginThrottleOptions } from "./login-throttle.ts";
+import { createNotificationService } from "./notifications.ts";
 import { createReminderService } from "./reminders.ts";
 import { createSummaryService } from "./summaries.ts";
 import { createTokenService } from "./tokens.ts";
@@ -35,5 +36,6 @@ export function createServices(opts: CreateServicesOptions) {
     tokens: createTokenService(deps),
     exports: createExportService(deps),
     loginThrottle: createLoginThrottle(deps, opts.loginThrottle),
+    notifications: createNotificationService(deps, push),
   };
 }
