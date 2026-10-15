@@ -167,3 +167,22 @@ export const personalAccessTokens = pgTable(
   },
   (t) => [index("personal_access_tokens_user_idx").on(t.userId)],
 );
+
+/** Expo push tickets awaiting a receipt check (push.receipts job). */
+export const pushTickets = pgTable(
+  "push_tickets",
+  {
+    id: id(),
+    userId: userId(),
+    ticketId: text("ticket_id").notNull().unique(),
+    expoPushToken: text("expo_push_token").notNull(),
+    checkedAt: tstz("checked_at"),
+    ...timestamps,
+  },
+  (t) => [
+    index("push_tickets_user_idx").on(t.userId),
+    index("push_tickets_unchecked_idx")
+      .on(t.createdAt)
+      .where(sql`${t.checkedAt} is null`),
+  ],
+);

@@ -1,4 +1,6 @@
 import { createRecordingPushSender, createServices, type PushMessage, type Services } from "@te/core";
+
+export type RecordingPush = ReturnType<typeof createRecordingPushSender>;
 import { afterAll, beforeAll } from "vitest";
 import { createRepositories, createTestDb, insertUser, type DbHandle } from "../src/index.ts";
 
@@ -7,6 +9,7 @@ export interface Harness {
   services: Services;
   clock: { now: Date };
   pushed: PushMessage[];
+  push: RecordingPush;
   newUser(opts?: { timezone?: string }): Promise<string>;
 }
 
@@ -17,6 +20,7 @@ export function useHarness(): Harness {
     h.handle = await createTestDb();
     const push = createRecordingPushSender();
     h.pushed = push.sent;
+    h.push = push;
     h.services = createServices({ repos: createRepositories(h.handle.db), now: () => h.clock.now, push });
     h.newUser = async (opts = {}) => (await insertUser(h.handle.db, opts)).id;
   });

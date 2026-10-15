@@ -1,13 +1,14 @@
 import type {
   DeviceRepository,
   LoginAttemptRepository,
+  PushTicketRepository,
   ReminderRecord,
   ReminderRepository,
   TokenRepository,
 } from "@te/core";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt, lte } from "drizzle-orm";
 import type { Database } from "../client.ts";
-import { loginAttempts, personalAccessTokens, pushDevices, reminders } from "../schema/index.ts";
+import { loginAttempts, personalAccessTokens, pushDevices, pushTickets, reminders } from "../schema/index.ts";
 
 const iso = (d: Date) => d.toISOString();
 const isoOrNull = (d: Date | null) => (d === null ? null : d.toISOString());
@@ -72,6 +73,27 @@ export function createReminderRepository(db: Database): ReminderRepository {
       const rows = await db
         .delete(reminders)
         .where(and(eq(reminders.userId, userId), eq(reminders.id, id)))
+        .returning({ id: reminders.id });
+      return rows.length > 0;
+    },
+    async listDue(now, limit) {
+      const rows = await db
+        .select()
+        .from(reminders)
+        .where(and(eq(reminders.enabled, true), lte(reminders.nextFireAt, new Date(now))))
+        .orderBy(asc(reminders.nextFireAt))
+        .limit(limit);
+      return rows.map((r) => Object.assign(toReminderRecord(r), { userId: r.userId }));
+    },
+    async advance(id, expected, next) {
+      const rows = await db
+        .update(reminders)
+        .set({
+          nextFireAt: dateOrNull(next.nextFireAt),
+          lastFiredAt: new Date(next.lastFiredAt),
+          updatedAt: new Date(),
+        })
+        .where(and(eq(reminders.id, id), eq(reminders.nextFireAt, new Date(expected))))
         .returning({ id: reminders.id });
       return rows.length > 0;
     },
@@ -224,6 +246,35 @@ export function createLoginAttemptRepository(db: Database): LoginAttemptReposito
     },
     async clear(keys) {
       if (keys.length > 0) await db.delete(loginAttempts).where(inArray(loginAttempts.key, keys));
+    },
+  };
+}
+
+export function createPushTicketRepository(db: Database): PushTicketRepository {
+  return {
+    async record(tickets, at) {
+      const createdAt = new Date(at);
+      if (tickets.length > 0)
+        await db
+          .insert(pushTickets)
+          .values(tickets.map((t) => ({ ...t, createdAt })))
+          .onConflictDoNothing();
+    },
+    async listUnchecked(before, limit) {
+      return db
+        .select({ ticketId: pushTickets.ticketId, expoPushToken: pushTickets.expoPushToken })
+        .from(pushTickets)
+        .where(and(isNull(pushTickets.checkedAt), lt(pushTickets.createdAt, new Date(before))))
+        .orderBy(asc(pushTickets.createdAt))
+        .limit(limit);
+    },
+    async markChecked(ticketIds, at) {
+      if (ticketIds.length > 0) {
+        await db
+          .update(pushTickets)
+          .set({ checkedAt: new Date(at) })
+          .where(inArray(pushTickets.ticketId, ticketIds));
+      }
     },
   };
 }
