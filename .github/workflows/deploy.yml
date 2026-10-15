@@ -1,0 +1,95 @@
+name: Deploy
+
+# Merges to main: deploy the API (migrations run as the Fly release command), smoke test it, then ship the
+# mobile app: an OTA update when only JS changed, or a new store build when the native fingerprint changed.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Skip until Fly is configured
+        id: gate
+        run: |
+          if [ -z "${{ secrets.FLY_API_TOKEN }}" ]; then
+            echo "FLY_API_TOKEN not set; skipping deploy (docs/setup.md step 3)."; echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else echo "enabled=true" >> "$GITHUB_OUTPUT"; fi
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: steps.gate.outputs.enabled == 'true'
+      - name: Deploy to Fly (release command runs migrations)
+        if: steps.gate.outputs.enabled == 'true'
+        run: flyctl deploy --remote-only --app "${{ vars.FLY_APP || 'traitengineer' }}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Smoke test
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+          CI_PERSONAL_ACCESS_TOKEN: ${{ secrets.CI_PERSONAL_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 20); do
+            if curl -fsS "$PUBLIC_URL/health" | grep -q '"db":"ok"'; then break; fi
+            sleep 6
+          done
+          curl -fsS "$PUBLIC_URL/health"
+          if [ -n "${CI_PERSONAL_ACCESS_TOKEN:-}" ]; then
+            curl -fsS -H "Authorization: Bearer $CI_PERSONAL_ACCESS_TOKEN" "$PUBLIC_URL/v1/me" > /dev/null
+            echo "Authenticated smoke test passed"
+          else
+            echo "::warning::CI_PERSONAL_ACCESS_TOKEN not set; skipped authenticated smoke test"
+          fi
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$PUBLIC_URL/mcp")" = "401"
+
+  mobile:
+    needs: api
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - name: Skip until EAS is configured
+        id: gate
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ] || [ -z "${{ vars.EAS_PROJECT_ID }}" ]; then
+            echo "EXPO_TOKEN / EAS_PROJECT_ID not set; skipping mobile release (docs/setup.md step 7)."; echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else echo "enabled=true" >> "$GITHUB_OUTPUT"; fi
+      - uses: pnpm/action-setup@v4
+        if: steps.gate.outputs.enabled == 'true'
+      - uses: actions/setup-node@v5
+        if: steps.gate.outputs.enabled == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.gate.outputs.enabled == 'true'
+        run: pnpm install --frozen-lockfile
+      - uses: expo/expo-github-action@v8
+        if: steps.gate.outputs.enabled == 'true'
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      # Same fingerprint as an existing build → `eas update` (OTA); otherwise a new build, auto-submitted.
+      - uses: expo/expo-github-action/continuous-deploy-fingerprint@main
+        if: steps.gate.outputs.enabled == 'true'
+        with:
+          working-directory: apps/mobile
+          profile: production
+          branch: production
+          environment: production
+          auto-submit-builds: true
+        env:
+          EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+          IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+          EXPO_PUBLIC_API_URL: ${{ vars.PUBLIC_URL }}

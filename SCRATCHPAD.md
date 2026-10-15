@@ -7,9 +7,9 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - [x] M1 Domain and database
 - [x] M2 API and auth (PR #1 merged, main CI green)
 - [x] M3 MCP (PR #2 merged after CI green)
-- [ ] M4 Mobile and web
-- [ ] M5 Notifications
-- [ ] M6 Deploy (needs human: Neon, Fly, DNS, EAS, Apple)
+- [x] M4 Mobile and web (PR #3; iOS 27 simulator verified in M5)
+- [x] M5 Notifications (PR #4; real-device push = human H15)
+- [~] M6 Deploy: artifacts done on feat/m6-deploy; needs human H3–H8, H10 to go live
 - [ ] M7 Resilience (needs human: archive repo + token)
 - [ ] M8 Preview environments (optional)
 
@@ -49,3 +49,11 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - Ruleset still lacks required status check (H2c follow-up) → I wait for `gh pr checks --watch` before merging.
 - Lost `human tasks.md` once via git pull after untracking; restored. Back it up before checkouts of old commits.
 - Next: M4 mobile + web on feat/m4-mobile-web.
+
+### 2026-10-15 M4/M5
+- M4 merged (PR #3). iOS 27 crashed at launch: no UIScene adoption → local config plugin with-scene-lifecycle (ADR 0030). Simulator verified.
+- M5 merged (PR #4): compare-and-set dispatch, pg-boss on PGlite, Expo push sender, native notifications.
+- Gotchas: pnpm overrides pin react/react-native (server peer deps pulled React 19.3.1); jest needs TanStack timers unref'd;
+  sandbox: port binding / Xcode / expo install need dangerouslyDisableSandbox; pnpm store /tmp/claude-501/pnpm-store.
+- Simulator: API on :3000 + Metro on :8081 started in background this session (kill when done).
+- Next: M6 artifacts (Dockerfile, fly.toml, deploy.yml verified via CI docker job), then M7 (export done; archive job + restore).
