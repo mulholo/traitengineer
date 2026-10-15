@@ -61,3 +61,10 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 ### 2026-10-15 M6–M8
 - M6 merged (#5) with CI docker build+boot; M7 merged (#6); Sentry merged (#7); M8 workflow prepared.
 - Everything left needs human accounts: H3–H13 (Neon, Fly, DNS, secrets, EAS, Apple, Sentry, archive token), H15 device push.
+
+### 2026-10-15 wrap-up of agent-side work
+- All milestone code merged to main (PRs #1–#9). Sentry (#7) and Maestro flow (#9) close remaining spec items.
+- Remaining acceptance items are human-gated: see `human tasks.md` H2c follow-up (required status check),
+  H3–H13 (accounts/secrets for M6–M8), H15 (device push), H16 (optional Maestro).
+- When the human provides values: deploy (docs/deploy.md), create owner, set CI_PERSONAL_ACCESS_TOKEN, verify
+  smoke tests, TestFlight, OTA, Claude connector + weekly_review on real entries, first archive commit, preview PR.
