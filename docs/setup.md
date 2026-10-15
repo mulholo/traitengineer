@@ -96,7 +96,8 @@ Settings → Secrets and variables → Actions. The deploy workflow skips each p
 | `EXPO_TOKEN`                      | secret   | EAS update / build / submit                                                         |
 | `CLAUDE_CODE_OAUTH_TOKEN`         | secret   | Claude Code GitHub Action for issues labelled `agent`                               |
 | `NEON_API_KEY`, `NEON_PROJECT_ID` | secret   | M8 preview branches                                                                 |
-| `FLY_APP`                         | variable | Fly app name (default `traitengineer`)                                              |
+| `FLY_APP`                         | variable | Fly app name (default `traitengineer`); previews are `<FLY_APP>-pr-<n>`             |
+| `FLY_ORG`                         | variable | Fly org for preview apps (default `personal`)                                       |
 | `PUBLIC_URL`                      | variable | `https://…` production origin, for smoke tests and the app build                    |
 | `EAS_PROJECT_ID`                  | variable | From `npx eas-cli init` in `apps/mobile`                                            |
 | `IOS_BUNDLE_ID`                   | variable | e.g. `com.yourname.traitengineer` (default placeholder `com.example.traitengineer`) |
