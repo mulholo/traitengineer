@@ -89,3 +89,19 @@ Milestone log: date, milestone, what shipped, anything deferred.
   consent end to end; layout; 44px tap targets; every screen). Screenshots in `docs/screenshots/{narrow,wide}`.
 - **Deferred:** iOS simulator dev-build check (see scratchpad / human tasks); native passkeys (ADR 0029).
 - **Decisions:** ADRs 0028 (mobile implementation choices) and 0029 (passkeys on web first).
+
+## 2026-10-15 — M5 Notifications
+
+- **Shipped:** core `notifications.dispatchDue()` (compare-and-set, exactly once per occurrence, catch-up after
+  downtime) and `checkReceipts()`; `push_tickets` table; Expo `PushSender`; pg-boss worker (`ROLE=worker|all`)
+  with `reminders.dispatch` (every minute) and `push.receipts` (every 15 minutes), running on PGlite locally;
+  mobile: notification permission explainer after first sign-in, push token registration on every start,
+  "Log now" category action, tap routing from cold start and foreground to the quick-log deep link.
+- **Tests:** DST next-fire (core, from M2) plus 8 dispatch/receipt integration tests (6 overlapping runs →
+  one push per device; retry after failed send → no duplicate; downtime catch-up; disabled reminders/devices;
+  08:30 local across the October change; DeviceNotRegistered via ticket and receipt); a real pg-boss job on
+  PGlite delivering a reminder; deep-link mapping unit test.
+- **iOS:** the M4 dev build runs on the iOS 27 simulator after adopting the UIScene life cycle (iOS 27
+  terminates apps that don't): see ADR 0030.
+- **Deferred:** a real push to a device needs an EAS project ID (H7) and a physical iPhone build (H8);
+  the human verifies it on device (spec M5 acceptance).
