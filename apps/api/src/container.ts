@@ -4,6 +4,7 @@ import { createApp } from "./app.ts";
 import { createAuth } from "./auth/better-auth.ts";
 import type { Env } from "./env.ts";
 import { createLogger } from "./logger.ts";
+import { createErrorReporter, type ErrorReporter } from "./observability.ts";
 import { createGitHubArchiveStore } from "./archive/github.ts";
 import { createExpoPushSender } from "./push/expo.ts";
 
@@ -11,7 +12,7 @@ import { createExpoPushSender } from "./push/expo.ts";
 export function createContainerFromHandle(
   env: Env,
   handle: DbHandle,
-  opts: { push?: PushSender; archive?: ArchiveStore; now?: () => Date } = {},
+  opts: { push?: PushSender; archive?: ArchiveStore; now?: () => Date; reportError?: ErrorReporter } = {},
 ) {
   const logger = createLogger(env);
   const services = createServices({
@@ -28,6 +29,7 @@ export function createContainerFromHandle(
     auth,
     logger,
     checkDb,
+    reportError: opts.reportError ?? createErrorReporter(env),
     ...(opts.now ? { now: () => opts.now!().getTime(), nowDate: opts.now } : {}),
   });
   return { env, logger, handle, services, auth, app, close: () => handle.close() };

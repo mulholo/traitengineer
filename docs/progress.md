@@ -127,3 +127,13 @@ Milestone log: date, milestone, what shipped, anything deferred.
   API; the job running on a real pg-boss worker. Restore CLI verified locally against a real API export.
 - **Waiting on human:** `ARCHIVE_REPO` + `ARCHIVE_GITHUB_TOKEN` (H13) → first real archive commit.
 - **Decisions:** ADR 0032.
+
+## 2026-10-15 — Sentry (spec sections 2 and 12)
+
+- **Shipped:** API error reporter (`apps/api/src/observability.ts`): Sentry only when `SENTRY_DSN` is set,
+  unexpected (500) errors only, tagged with request ID and user ID, cookies/auth headers/bodies scrubbed.
+  Mobile: `@sentry/react-native` initialised only when `EXPO_PUBLIC_SENTRY_DSN` is set at build time; the root
+  layout is wrapped only when enabled. Source-map upload (Sentry's Expo config plugin) is deferred until the
+  Sentry org/project exist (human task H9).
+- **Tests:** 500s reported with request/user IDs and no internals in the response; domain errors not reported;
+  reporter is a no-op without a DSN.

@@ -7,11 +7,12 @@ import type { Auth } from "./auth/better-auth.ts";
 import { mountAuth, mountTestSession } from "./auth/routes.ts";
 import type { Env } from "./env.ts";
 import { authenticate, requestLogger, requireScopes, writeRateLimit } from "./http/middleware.ts";
-import { onError, problem } from "./http/problem.ts";
+import { createOnError, problem } from "./http/problem.ts";
 import { mountMcp, mountWellKnown } from "./mcp/mount.ts";
 import type { AppEnv } from "./http/types.ts";
 import { defaultWebDistDir, mountWeb } from "./http/web.ts";
 import type { Logger } from "./logger.ts";
+import { noopReporter, type ErrorReporter } from "./observability.ts";
 import { registerChangeTargetRoutes } from "./routes/change-targets.ts";
 import { registerDeviceRoutes } from "./routes/devices.ts";
 import { registerEntryRoutes } from "./routes/entries.ts";
@@ -29,6 +30,7 @@ export interface AppDeps {
   checkDb: () => Promise<boolean>;
   now?: () => number;
   nowDate?: () => Date;
+  reportError?: ErrorReporter;
 }
 
 export const OPENAPI_INFO = {
@@ -65,7 +67,7 @@ export function createApp(deps: AppDeps) {
       cors({ origin: (o) => (/^https?:\/\/localhost(:\d+)?$/.test(o) ? o : null), credentials: true }),
     );
   }
-  app.onError(onError);
+  app.onError(createOnError(deps.reportError ?? noopReporter));
 
   // Public
   registerHealthRoute(app, deps.checkDb);

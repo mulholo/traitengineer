@@ -3,6 +3,7 @@ import { isDomainError, type FieldIssue } from "@te/core";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { noopReporter, type ErrorReporter } from "../observability.ts";
 import type { AppEnv } from "./types.ts";
 
 const titles: Record<ProblemCode, string> = {
@@ -53,7 +54,11 @@ export function problem(
 }
 
 /** Global error handler: domain errors → problem+json; everything else → 500 without leaking details. */
-export function onError(err: Error, c: Context<AppEnv>): Response {
+export function createOnError(report: ErrorReporter) {
+  return (err: Error, c: Context<AppEnv>): Response => onError(err, c, report);
+}
+
+export function onError(err: Error, c: Context<AppEnv>, report: ErrorReporter = noopReporter): Response {
   if (isDomainError(err)) return problem(c, err.code, err.message, { errors: err.issues });
   if (err instanceof HTTPException) {
     if (err.status === 401) return problem(c, "unauthenticated");
@@ -61,5 +66,8 @@ export function onError(err: Error, c: Context<AppEnv>): Response {
     return err.getResponse();
   }
   c.get("log")?.error({ err }, "unhandled error");
+  const userId = c.get("principal")?.userId;
+  const requestId = c.get("requestId");
+  report(err, { path: c.req.path, ...(userId ? { userId } : {}), ...(requestId ? { requestId } : {}) });
   return problem(c, "internal_error");
 }

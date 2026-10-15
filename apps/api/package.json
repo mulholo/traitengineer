@@ -24,6 +24,7 @@
     "@hono/zod-openapi": "^1.6.3",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@scalar/hono-api-reference": "^0.12.12",
+    "@sentry/node": "^11.7.0",
     "@te/contracts": "workspace:*",
     "@te/core": "workspace:*",
     "@te/db": "workspace:*",

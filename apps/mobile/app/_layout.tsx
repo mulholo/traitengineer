@@ -7,11 +7,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "../src/auth/session";
 import { setupOnlineManager } from "../src/platform/network";
 import { useQuickActions } from "../src/platform/quick-actions";
+import { withObservability } from "../src/observability";
 import { createQueryClient, persister } from "../src/query/client";
 
 setupOnlineManager();
 
-export default function RootLayout() {
+function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   useQuickActions();
   return (
@@ -36,3 +37,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default withObservability(RootLayout);
