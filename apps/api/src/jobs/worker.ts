@@ -6,12 +6,14 @@ import type { Logger } from "../logger.ts";
 export const JOBS = {
   dispatchReminders: "reminders.dispatch",
   pushReceipts: "push.receipts",
+  archiveNightly: "archive.nightly",
 } as const;
 
 /** Cron schedules (pg-boss evaluates them server-side, so they survive restarts and run once per tick). */
 export const SCHEDULES = [
   { name: JOBS.dispatchReminders, cron: "* * * * *", tz: "UTC" },
   { name: JOBS.pushReceipts, cron: "*/15 * * * *", tz: "UTC" },
+  { name: JOBS.archiveNightly, cron: "0 3 * * *", tz: "Europe/London" },
 ] as const;
 
 export interface WorkerOptions {
@@ -45,6 +47,16 @@ export async function startWorker(opts: WorkerOptions) {
   await boss.work(JOBS.pushReceipts, async () => {
     const result = await services.notifications.checkReceipts();
     if (result.checked > 0) logger.info(result, "push receipts checked");
+    return result;
+  });
+
+  await boss.work(JOBS.archiveNightly, async () => {
+    if (!services.archive.configured) {
+      logger.warn("archive.nightly skipped: ARCHIVE_REPO / ARCHIVE_GITHUB_TOKEN not set");
+      return { users: 0, snapshot: null };
+    }
+    const result = await services.archive.archiveAll();
+    logger.info(result, "nightly archive written");
     return result;
   });
 

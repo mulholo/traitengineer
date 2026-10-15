@@ -46,3 +46,35 @@ test("pg-boss runs reminders.dispatch on PGlite and the reminder reaches the dev
     })
     .toBe("completed");
 }, 30_000);
+
+test("archive.nightly runs on the worker and writes a snapshot when an archive store is configured", async () => {
+  const { createRecordingArchiveStore } = await import("@te/core");
+  // Only the archive-configured worker should handle this job.
+  await boss.offWork(JOBS.archiveNightly);
+  const archive = createRecordingArchiveStore();
+  const archived = createServices({
+    repos: createRepositories(handle.db),
+    now: () => clock.now,
+    push,
+    archive,
+  });
+  const archiveBoss = await startWorker({
+    handle,
+    services: archived,
+    logger: createLogger({ LOG_LEVEL: "silent", NODE_ENV: "test" }),
+    schedule: false,
+  });
+  try {
+    const id = await archiveBoss.send(JOBS.archiveNightly, {});
+    await expect
+      .poll(async () => (await archiveBoss.getJobById(JOBS.archiveNightly, id ?? ""))?.state, {
+        timeout: 15_000,
+        interval: 250,
+      })
+      .toBe("completed");
+    expect(archive.snapshots).toHaveLength(1);
+    expect(archive.snapshots[0]?.files.some((f) => f.path.endsWith("traitengineer.md"))).toBe(true);
+  } finally {
+    await archiveBoss.stop({ graceful: false, close: false });
+  }
+}, 30_000);
