@@ -1,4 +1,6 @@
+import type { ArchiveStore } from "../archive.ts";
 import { createRecordingPushSender, type PushSender } from "../push.ts";
+import { createArchiveService } from "./archive.ts";
 import type { Repositories } from "../repositories.ts";
 import { createChangeTargetService } from "./change-targets.ts";
 import { createDeviceService } from "./devices.ts";
@@ -18,6 +20,7 @@ export interface CreateServicesOptions {
   repos: Repositories;
   now?: () => Date;
   push?: PushSender;
+  archive?: ArchiveStore;
   loginThrottle?: LoginThrottleOptions;
 }
 
@@ -37,5 +40,6 @@ export function createServices(opts: CreateServicesOptions) {
     exports: createExportService(deps),
     loginThrottle: createLoginThrottle(deps, opts.loginThrottle),
     notifications: createNotificationService(deps, push),
+    archive: createArchiveService(deps, opts.archive),
   };
 }
