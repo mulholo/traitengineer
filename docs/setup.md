@@ -87,14 +87,19 @@ Install the TestFlight build on your iPhone, sign in, and allow notifications wh
 
 ## GitHub Actions secrets and variables
 
-| Name                              | Kind     | Purpose                                                         |
-| --------------------------------- | -------- | --------------------------------------------------------------- |
-| `FLY_API_TOKEN`                   | secret   | `flyctl deploy` in `deploy.yml`                                 |
-| `EXPO_TOKEN`                      | secret   | `eas update` / `eas build` / `eas submit`                       |
-| `CI_PERSONAL_ACCESS_TOKEN`        | secret   | Smoke test `GET /v1/me` after deploy (a `read`-scoped TE token) |
-| `CLAUDE_CODE_OAUTH_TOKEN`         | secret   | Claude Code GitHub Action for issues labelled `agent`           |
-| `NEON_API_KEY`, `NEON_PROJECT_ID` | secret   | M8 preview branches                                             |
-| `PUBLIC_URL`                      | variable | Smoke tests                                                     |
+Settings → Secrets and variables → Actions. The deploy workflow skips each part until its values exist.
+
+| Name                              | Kind     | Purpose                                                                             |
+| --------------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `FLY_API_TOKEN`                   | secret   | `flyctl deploy` in `deploy.yml`                                                     |
+| `CI_PERSONAL_ACCESS_TOKEN`        | secret   | Smoke test `GET /v1/me` after deploy (a `read`-scoped TE token)                     |
+| `EXPO_TOKEN`                      | secret   | EAS update / build / submit                                                         |
+| `CLAUDE_CODE_OAUTH_TOKEN`         | secret   | Claude Code GitHub Action for issues labelled `agent`                               |
+| `NEON_API_KEY`, `NEON_PROJECT_ID` | secret   | M8 preview branches                                                                 |
+| `FLY_APP`                         | variable | Fly app name (default `traitengineer`)                                              |
+| `PUBLIC_URL`                      | variable | `https://…` production origin, for smoke tests and the app build                    |
+| `EAS_PROJECT_ID`                  | variable | From `npx eas-cli init` in `apps/mobile`                                            |
+| `IOS_BUNDLE_ID`                   | variable | e.g. `com.yourname.traitengineer` (default placeholder `com.example.traitengineer`) |
 
 ## Using the MCP server locally
 

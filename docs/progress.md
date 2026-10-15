@@ -105,3 +105,13 @@ Milestone log: date, milestone, what shipped, anything deferred.
   terminates apps that don't): see ADR 0030.
 - **Deferred:** a real push to a device needs an EAS project ID (H7) and a physical iPhone build (H8);
   the human verifies it on device (spec M5 acceptance).
+
+## 2026-10-15 — M6 Deploy (prepared; waiting on human setup)
+
+- **Shipped:** multi-stage `Dockerfile` (web export + API, non-root, healthcheck), `.dockerignore`, `fly.toml`
+  (release command runs migrations, always-on machine for the worker), `deploy.yml` (Fly deploy, smoke tests
+  incl. authenticated `/v1/me` and MCP 401, Expo fingerprint-based OTA-or-build with TestFlight auto-submit,
+  each part self-skipping until configured), CI job that builds and boots the image, `docs/deploy.md`.
+- **Waiting on human (human tasks H3–H8, H10):** Neon, Fly app + token, domain/DNS, secrets, Expo/EAS project,
+  Apple developer account, creating the owner. Then: first deploy, smoke tests, TestFlight install, OTA check.
+- **Decisions:** ADR 0031 (deploy topology).
