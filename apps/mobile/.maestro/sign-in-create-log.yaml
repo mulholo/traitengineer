@@ -1,0 +1,42 @@
+# Sign in → create a change target → log an entry (spec section 9). Uses the same testIDs as the Playwright
+# e2e suite. Run against a preview/production build (not the dev client):
+#   maestro test -e EMAIL=you@example.com -e PASSWORD=... apps/mobile/.maestro/sign-in-create-log.yaml
+# or on EAS with `eas workflow:run .eas/workflows/e2e.yml` (see docs/deploy.md).
+appId: ${APP_ID || "com.example.traitengineer"}
+name: Sign in, create a target, log evidence
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "email"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "password"
+- inputText: ${PASSWORD}
+- tapOn:
+    id: "sign-in"
+# First sign-in on a device shows the notifications explainer.
+- runFlow:
+    when:
+      visible: "Gentle reminders"
+    commands:
+      - tapOn: "Not now"
+- assertVisible: "Today"
+- tapOn: "Targets"
+- tapOn:
+    id: "new-target"
+- tapOn:
+    id: "field-title"
+- inputText: "Default to action (Maestro)"
+- tapOn:
+    id: "save-target"
+- assertVisible: "Default to action (Maestro)"
+- tapOn: "Today"
+- tapOn:
+    id: "log-button"
+    index: 0
+# The first field ("What did you do?") is autofocused.
+- inputText: "Logged from Maestro"
+- tapOn:
+    id: "save-entry"
+- assertVisible: "Logged from Maestro"

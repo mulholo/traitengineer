@@ -143,3 +143,10 @@ Milestone log: date, milestone, what shipped, anything deferred.
 - **Shipped:** `preview.yml` (Neon branch per PR, Fly preview app with per-app secrets, migrations via release
   command, health check, EAS update on the preview channel, sticky PR comment; teardown on close), docs.
 - **Waiting on human:** `NEON_API_KEY`, `NEON_PROJECT_ID` (and Fly/EAS from M6). Until then the workflow skips.
+
+## 2026-10-15 — Maestro flow (spec section 9, optional)
+
+- Added `apps/mobile/.maestro/sign-in-create-log.yaml` (sign in → create target → log entry, using the same
+  testIDs as Playwright) and an EAS workflow (`.eas/workflows/e2e.yml`, `e2e` simulator build profile) to run it
+  on EAS. **Not yet executed**: Maestro isn't installed locally (optional human task H16) and EAS needs the
+  project (H7).
