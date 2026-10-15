@@ -1,0 +1,16 @@
+**/node_modules
+**/.tsbuild
+**/dist
+**/.turbo
+**/.expo
+**/ios
+**/android
+**/test-results
+**/playwright-report
+.git
+.pglite
+**/.e2e-pglite
+.env
+.env.*
+human tasks.md
+docs/screenshots
