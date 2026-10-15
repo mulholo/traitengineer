@@ -67,8 +67,15 @@ machine must always be running for reminders to fire.
   This revokes every session.
 - **Run a job now:** reminders dispatch every minute. To check worker health, look for `worker started`
   and `reminders dispatched` in the logs.
-- **Database restore:** Neon point-in-time restore (branch from a timestamp, then point `DATABASE_URL*` at it).
-  Nightly human-readable archives arrive in M7.
+- **Database restore (provider-level):** Neon point-in-time restore (branch from a timestamp, then point
+  `DATABASE_URL*` at it).
+- **Restore from the archive (provider-independent):** every night at 03:00 Europe/London, `archive.nightly`
+  commits `users/<id>/traitengineer.{md,json}` to the private archive repo (`ARCHIVE_REPO`). To rebuild
+  anywhere: deploy, create the owner (`user:create-owner`), then
+  `fly ssh console -C "node apps/api/src/cli/restore.ts /tmp/traitengineer.json"` after copying the JSON in
+  (`fly ssh sftp shell`), or locally `OWNER_EMAIL=… DATABASE_URL_DIRECT=… pnpm db:restore traitengineer.json`.
+  Restores keep IDs and timestamps and are idempotent. The round trip (export → restore → export) runs in CI
+  (`packages/db/test/restore.test.ts`).
 
 ## Local production-like run
 

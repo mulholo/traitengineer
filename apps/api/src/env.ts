@@ -20,6 +20,9 @@ export const envSchema = z
     SENTRY_DSN: optionalString,
     EXPO_ACCESS_TOKEN: optionalString,
     WEB_DIST_DIR: optionalString,
+    /** `owner/name` of the private archive repo and a token with Contents read/write on it (M7). */
+    ARCHIVE_REPO: optionalString,
+    ARCHIVE_GITHUB_TOKEN: optionalString,
     WRITE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
   })
   .superRefine((env, ctx) => {

@@ -115,3 +115,15 @@ Milestone log: date, milestone, what shipped, anything deferred.
 - **Waiting on human (human tasks H3–H8, H10):** Neon, Fly app + token, domain/DNS, secrets, Expo/EAS project,
   Apple developer account, creating the owner. Then: first deploy, smoke tests, TestFlight install, OTA check.
 - **Decisions:** ADR 0031 (deploy topology).
+
+## 2026-10-15 — M7 Resilience
+
+- **Shipped:** nightly `archive.nightly` job (03:00 Europe/London) committing Markdown + JSON per user and a
+  README to the private archive repo in one commit (GitHub Git Data API); `restoreExport()` +
+  `pnpm db:restore <file>` (keeps IDs/timestamps, idempotent, transactional); export endpoint and share
+  sheet were delivered in M2/M4.
+- **Tests:** export → restore → export round trip into a fresh database (in `pnpm check`, so CI), re-run is
+  a no-op, invalid files rejected; archive contents (no emails); GitHub store request sequence against a fake
+  API; the job running on a real pg-boss worker. Restore CLI verified locally against a real API export.
+- **Waiting on human:** `ARCHIVE_REPO` + `ARCHIVE_GITHUB_TOKEN` (H13) → first real archive commit.
+- **Decisions:** ADR 0032.

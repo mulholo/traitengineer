@@ -13,7 +13,8 @@
     "seed": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/seed.ts",
     "gen:openapi": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/gen-openapi.ts",
     "user:create-owner": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/create-owner.ts",
-    "user:set-password": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/set-password.ts"
+    "user:set-password": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/set-password.ts",
+    "db:restore": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=../../.env src/cli/restore.ts"
   },
   "dependencies": {
     "@better-auth/expo": "^1.7.8",

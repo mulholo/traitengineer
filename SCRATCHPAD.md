@@ -9,8 +9,8 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - [x] M3 MCP (PR #2 merged after CI green)
 - [x] M4 Mobile and web (PR #3; iOS 27 simulator verified in M5)
 - [x] M5 Notifications (PR #4; real-device push = human H15)
-- [~] M6 Deploy: artifacts done on feat/m6-deploy; needs human H3–H8, H10 to go live
-- [ ] M7 Resilience (needs human: archive repo + token)
+- [~] M6 Deploy: artifacts merged (PR #5, CI boots image); needs human H3–H8, H10 to go live
+- [~] M7 Resilience: code done on feat/m7-resilience; first real archive commit needs H13
 - [ ] M8 Preview environments (optional)
 
 ## Environment notes
