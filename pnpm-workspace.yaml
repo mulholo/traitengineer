@@ -4,3 +4,9 @@ packages:
 onlyBuiltDependencies:
   - lefthook
   - esbuild
+# One React / React Native for the whole workspace, pinned to the Expo SDK's versions. Without this, peer
+# dependencies of server packages (e.g. @better-auth/expo in apps/api) resolve a second, newer React.
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3
+  react-native: 0.86.3
