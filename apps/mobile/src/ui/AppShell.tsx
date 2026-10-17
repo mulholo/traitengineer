@@ -49,9 +49,15 @@ export function NavBar({ state, navigation }: BottomTabBarProps) {
         accessibilityLabel={item.label}
         accessibilityState={{ selected: active }}
         onPress={() => navigation.navigate(item.name)}
-        className={`min-h-tap justify-center rounded-control px-4 ${wide ? "" : "flex-1 items-center"} ${active ? "bg-surface" : ""}`}
+        className={`min-h-tap justify-center rounded-control ${wide ? "px-4" : "flex-1 items-center px-1"} ${active ? "bg-surface" : ""}`}
       >
-        <Text className={`text-body ${active ? "font-semibold text-primary" : "text-muted"}`}>
+        {/* One line, shrinking slightly on narrow phones rather than wrapping ("Reminders" on a 390pt iPhone). */}
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+          className={`${wide ? "text-body" : "text-caption"} ${active ? "font-semibold text-primary" : "text-muted"}`}
+        >
           {item.label}
         </Text>
       </Pressable>

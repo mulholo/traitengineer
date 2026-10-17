@@ -24,7 +24,18 @@ export function Screen({
   const inner = <View className="w-full max-w-[720px] self-center gap-4 px-gutter py-4">{children}</View>;
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={["top", "left", "right"]} testID={testID}>
-      {scroll ? <ScrollView keyboardShouldPersistTaps="handled">{inner}</ScrollView> : inner}
+      {scroll ? (
+        // Keyboard-aware: iOS insets the content so fields and buttons can always scroll above the keyboard.
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets
+          keyboardDismissMode="interactive"
+        >
+          {inner}
+        </ScrollView>
+      ) : (
+        inner
+      )}
     </SafeAreaView>
   );
 }
