@@ -9,7 +9,7 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - [x] M3 MCP (PR #2 merged after CI green)
 - [x] M4 Mobile and web (PR #3; iOS 27 simulator verified in M5)
 - [x] M5 Notifications (PR #4; real-device push = human H15)
-- [~] M6 Deploy: artifacts merged (PR #5, CI boots image); needs human H3–H8, H10 to go live
+- [~] M6 Deploy: LIVE at https://traitengineer.com (deploy + smoke green, run 39028743154); TestFlight/OTA wait on H7/H8
 - [~] M7 Resilience: merged (PR #6); first real archive commit needs H13
 - [~] M8 Preview environments: workflow on feat/m8-previews; needs Neon API key + Fly
 
@@ -74,3 +74,8 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - Maestro installed (~/.maestro, Java via brew); flow passes on iOS 27 Release build; fixed 3 native bugs (PR #11).
 - H3 (Neon) + H4 (Fly) done by human → PR #11 merge auto-deployed to Fly; prod healthy on traitengineer.fly.dev.
 - Blocked on H5 (DNS for traitengineer.com, GitHub var PUBLIC_URL), then H10 owner, CI PAT, H7/H8 EAS+Apple, H13 archive token.
+
+### 2026-10-17 (later)
+- DNS propagated; Let's Encrypt cert issued; deploy + smoke tests green on https://traitengineer.com.
+- Waiting on human: H10 owner, CI_PERSONAL_ACCESS_TOKEN, H11 connector, H7/H8 Expo+Apple, H13 archive token,
+  NEON_PROJECT_ID secret (previews). `gh run view --log` hangs on big logs: use the jobs API instead.
