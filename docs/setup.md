@@ -36,7 +36,8 @@ values go into Fly secrets (`fly secrets set`), CI values into GitHub Actions se
 
 ### 3. Fly.io (M6)
 
-1. Create an account and install `flyctl`.
+1. Create an account, **add a payment method** (trial machines are stopped after 5 minutes, which kills the
+   reminder worker and makes `fly ssh console` fail with "no started VMs"), and install `flyctl`.
 2. `fly apps create traitengineer` (or another name; tell the agent).
 3. `fly tokens create deploy -a traitengineer` → `FLY_API_TOKEN` (GitHub secret).
 
