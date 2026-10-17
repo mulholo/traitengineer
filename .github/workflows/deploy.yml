@@ -86,6 +86,8 @@ jobs:
         if: steps.gate.outputs.enabled == 'true'
         with:
           working-directory: apps/mobile
+          # v1 ships iOS only (spec section 9); Android store builds are out of scope.
+          platform: ios
           profile: production
           branch: production
           environment: production
