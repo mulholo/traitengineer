@@ -162,3 +162,11 @@ Milestone log: date, milestone, what shipped, anything deferred.
      (`automaticallyAdjustKeyboardInsets`, interactive dismiss).
   3. The "Reminders" tab label wrapped on 390pt phones; tab labels are single-line and shrink to fit.
 - Also: test IDs on the notifications explainer, and the flow declines iOS's "Save Password?" sheet.
+
+## 2026-10-17 — First production deploy
+
+- Deploy workflow (run 39024659183) deployed to Fly; the release command ran migrations against Neon
+  successfully. Verified on https://traitengineer.fly.dev: `/health` → `db: ok`, web app + SPA fallback served,
+  `/v1/me` and `/mcp` → 401, sign-up → 403, OAuth protected-resource metadata served.
+- Smoke-test step failed only because the `PUBLIC_URL` GitHub variable is unset; the custom domain
+  (`traitengineer.com`) still points at Namecheap parking (human task H5).

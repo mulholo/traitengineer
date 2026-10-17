@@ -68,3 +68,9 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
   H3–H13 (accounts/secrets for M6–M8), H15 (device push), H16 (optional Maestro).
 - When the human provides values: deploy (docs/deploy.md), create owner, set CI_PERSONAL_ACCESS_TOKEN, verify
   smoke tests, TestFlight, OTA, Claude connector + weekly_review on real entries, first archive commit, preview PR.
+
+### 2026-10-17
+- Ruleset fixed via API (required checks: check + docker, strict; squash only) with the human's OK.
+- Maestro installed (~/.maestro, Java via brew); flow passes on iOS 27 Release build; fixed 3 native bugs (PR #11).
+- H3 (Neon) + H4 (Fly) done by human → PR #11 merge auto-deployed to Fly; prod healthy on traitengineer.fly.dev.
+- Blocked on H5 (DNS for traitengineer.com, GitHub var PUBLIC_URL), then H10 owner, CI PAT, H7/H8 EAS+Apple, H13 archive token.
