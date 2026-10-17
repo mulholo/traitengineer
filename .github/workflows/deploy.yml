@@ -40,6 +40,8 @@ jobs:
           CI_PERSONAL_ACCESS_TOKEN: ${{ secrets.CI_PERSONAL_ACCESS_TOKEN }}
         run: |
           set -euo pipefail
+          PUBLIC_URL="${PUBLIC_URL%/}"   # tolerate a trailing slash in the repository variable
+          test -n "$PUBLIC_URL" || { echo "::error::Set the PUBLIC_URL repository variable (docs/setup.md)"; exit 1; }
           for i in $(seq 1 20); do
             if curl -fsS "$PUBLIC_URL/health" | grep -q '"db":"ok"'; then break; fi
             sleep 6
