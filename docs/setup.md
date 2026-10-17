@@ -72,6 +72,7 @@ run `pnpm user:set-password` the same way.
 2. Choose the bundle ID (placeholder `com.example.traitengineer`; tell the agent the real one).
 3. Create the App Store Connect app record. Let EAS manage certificates and the APNs push key
    (`npx eas-cli credentials`).
+4. Set the GitHub variable `IOS_RELEASE=true` so the deploy workflow starts building and submitting.
 
 ### 9. Sentry (optional, M6)
 
@@ -102,6 +103,7 @@ Settings → Secrets and variables → Actions. The deploy workflow skips each p
 | `PUBLIC_URL`                      | variable | `https://…` production origin, for smoke tests and the app build                    |
 | `EAS_PROJECT_ID`                  | variable | From `npx eas-cli init` in `apps/mobile`                                            |
 | `IOS_BUNDLE_ID`                   | variable | e.g. `com.yourname.traitengineer` (default placeholder `com.example.traitengineer`) |
+| `IOS_RELEASE`                     | variable | `true` once Apple credentials are in EAS; until then the mobile deploy job skips    |
 
 ## Using the MCP server locally
 

@@ -51,6 +51,7 @@ Then create a `read`-scoped personal access token in Settings → Tokens and sav
 | `NODE_ENV`, `ROLE`, `PORT`, `WEB_DIST_DIR`, `CLIENT_IP_HEADER` | `fly.toml` `[env]`           |                                                                         |
 | `FLY_API_TOKEN`, `EXPO_TOKEN`, `CI_PERSONAL_ACCESS_TOKEN`      | GitHub secrets               |                                                                         |
 | `FLY_APP`, `PUBLIC_URL`, `EAS_PROJECT_ID`, `IOS_BUNDLE_ID`     | GitHub variables             |                                                                         |
+| `IOS_RELEASE`                                                  | GitHub variable              | `true` once Apple credentials are in EAS; gates the mobile deploy job   |
 
 `auto_stop_machines` is off and `min_machines_running = 1`: the reminder worker shares the process, so a
 machine must always be running for reminders to fire.
