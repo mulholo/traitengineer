@@ -2,7 +2,9 @@ import type * as ReactQuery from "@tanstack/react-query";
 
 // Native modules that have no JS fallback under Jest.
 jest.mock("react-native-mmkv", () => {
-  const store = new Map<string, string>();
+  // Global so data survives jest.resetModules() (tests use that to simulate an app restart).
+  const g = globalThis as { mockMmkvStore?: Map<string, string> };
+  const store = (g.mockMmkvStore ??= new Map<string, string>());
   return {
     createMMKV: () => ({
       getString: (k: string) => store.get(k),

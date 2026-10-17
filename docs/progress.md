@@ -150,3 +150,15 @@ Milestone log: date, milestone, what shipped, anything deferred.
   testIDs as Playwright) and an EAS workflow (`.eas/workflows/e2e.yml`, `e2e` simulator build profile) to run it
   on EAS. **Not yet executed**: Maestro isn't installed locally (optional human task H16) and EAS needs the
   project (H7).
+
+## 2026-10-17 — Maestro flow verified on iOS 27 (native findings fixed)
+
+- Ran `.maestro/sign-in-create-log.yaml` against a Release simulator build (iPhone 18 Pro, iOS 27) and the local
+  API: sign in → create target → log entry → visible on Today. **Passes.**
+- It surfaced three native-only issues, now fixed:
+  1. iOS keeps keychain items across reinstalls, so a deleted-and-reinstalled app came back signed in; the
+     session token is now discarded on the first launch of a fresh install (unit-tested).
+  2. The keyboard covered the "Create target" button; scroll views are now keyboard-aware
+     (`automaticallyAdjustKeyboardInsets`, interactive dismiss).
+  3. The "Reminders" tab label wrapped on 390pt phones; tab labels are single-line and shrink to fit.
+- Also: test IDs on the notifications explainer, and the flow declines iOS's "Save Password?" sheet.

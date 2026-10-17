@@ -29,13 +29,14 @@ export default function NotificationsPrompt() {
       </View>
       <Button
         label="Turn on notifications"
+        testID="notifications-allow"
         busy={busy}
         onPress={() => {
           setBusy(true);
           void requestPermissionAndRegister().finally(done);
         }}
       />
-      <Button label="Not now" variant="ghost" onPress={done} />
+      <Button label="Not now" variant="ghost" onPress={done} testID="notifications-skip" />
     </Screen>
   );
 }
