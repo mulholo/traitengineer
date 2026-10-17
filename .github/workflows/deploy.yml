@@ -64,8 +64,9 @@ jobs:
       - name: Skip until EAS is configured
         id: gate
         run: |
-          if [ -z "${{ secrets.EXPO_TOKEN }}" ] || [ -z "${{ vars.EAS_PROJECT_ID }}" ]; then
-            echo "EXPO_TOKEN / EAS_PROJECT_ID not set; skipping mobile release (docs/setup.md step 7)."; echo "enabled=false" >> "$GITHUB_OUTPUT"
+          # IOS_RELEASE=true is set once Apple credentials exist in EAS (`eas credentials`); until then a build would fail.
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ] || [ -z "${{ vars.EAS_PROJECT_ID }}" ] || [ "${{ vars.IOS_RELEASE }}" != "true" ]; then
+            echo "EXPO_TOKEN / EAS_PROJECT_ID / IOS_RELEASE=true not set; skipping mobile release (docs/setup.md step 7)."; echo "enabled=false" >> "$GITHUB_OUTPUT"
           else echo "enabled=true" >> "$GITHUB_OUTPUT"; fi
       - uses: pnpm/action-setup@v4
         if: steps.gate.outputs.enabled == 'true'
