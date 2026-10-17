@@ -1,6 +1,6 @@
 name: Preview
 
-# Optional (M8): a throwaway environment per PR — Neon branch (copy of main's data, so the owner can sign in
+# Optional (M8): a throwaway environment per PR — Neon branch (copy of production data, so the owner can sign in
 # with their normal password), a Fly app, and an EAS update on the preview channel. Torn down on close.
 # Skips itself until NEON_API_KEY, NEON_PROJECT_ID and FLY_API_TOKEN exist.
 on:
@@ -46,8 +46,8 @@ jobs:
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           api_key: ${{ secrets.NEON_API_KEY }}
+          # No parent_branch: Neon branches from the project's default branch (named `production` in new projects).
           branch_name: ${{ env.BRANCH }}
-          parent_branch: main
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Create Fly app and set secrets
         env:
@@ -85,7 +85,7 @@ jobs:
           header: preview
           message: |
             ### Preview environment
-            - Web + API: https://${{ env.APP }}.fly.dev (sign in with your usual owner account; data is a Neon branch of main)
+            - Web + API: https://${{ env.APP }}.fly.dev (sign in with your usual owner account; data is a Neon branch of production)
             - API docs: https://${{ env.APP }}.fly.dev/docs · MCP: `https://${{ env.APP }}.fly.dev/mcp`
             ${{ steps.eas.outputs.group && format('- iOS: EAS update group `{0}` on the `preview` channel (open it in a preview build)', steps.eas.outputs.group) || '- iOS: EAS not configured yet' }}
 
