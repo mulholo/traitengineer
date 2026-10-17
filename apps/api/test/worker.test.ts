@@ -47,34 +47,23 @@ test("pg-boss runs reminders.dispatch on PGlite and the reminder reaches the dev
     .toBe("completed");
 }, 30_000);
 
-test("archive.nightly runs on the worker and writes a snapshot when an archive store is configured", async () => {
-  const { createRecordingArchiveStore } = await import("@te/core");
-  // Only the archive-configured worker should handle this job.
-  await boss.offWork(JOBS.archiveNightly);
-  const archive = createRecordingArchiveStore();
-  const archived = createServices({
-    repos: createRepositories(handle.db),
-    now: () => clock.now,
-    push,
-    archive,
-  });
-  const archiveBoss = await startWorker({
+test("starting the worker removes the retired archive.nightly schedule and queue", async () => {
+  // As left behind in production by the removed nightly archive (ADR 0033).
+  await boss.createQueue("archive.nightly");
+  await boss.schedule("archive.nightly", "0 3 * * *", null, { tz: "Europe/London" });
+  const scheduled = await startWorker({
     handle,
-    services: archived,
+    services: services(),
     logger: createLogger({ LOG_LEVEL: "silent", NODE_ENV: "test" }),
-    schedule: false,
   });
   try {
-    const id = await archiveBoss.send(JOBS.archiveNightly, {});
-    await expect
-      .poll(async () => (await archiveBoss.getJobById(JOBS.archiveNightly, id ?? ""))?.state, {
-        timeout: 15_000,
-        interval: 250,
-      })
-      .toBe("completed");
-    expect(archive.snapshots).toHaveLength(1);
-    expect(archive.snapshots[0]?.files.some((f) => f.path.endsWith("traitengineer.md"))).toBe(true);
+    expect(await scheduled.getSchedules("archive.nightly")).toEqual([]);
+    expect(await scheduled.getQueue("archive.nightly")).toBeNull();
+    expect((await scheduled.getSchedules()).map((x) => x.name).sort()).toEqual([
+      JOBS.pushReceipts,
+      JOBS.dispatchReminders,
+    ]);
   } finally {
-    await archiveBoss.stop({ graceful: false, close: false });
+    await scheduled.stop({ graceful: false, close: false });
   }
 }, 30_000);

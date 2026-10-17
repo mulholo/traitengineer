@@ -20,7 +20,7 @@ agents over MCP. v1 is single-owner: one account, no sign-up. The full v1 spec i
 | `pnpm db:seed`           | Seed a demo user + data, printing a dev-only password (refuses in production)                      |
 | `pnpm user:create-owner` | Create the single owner account (password prompted on TTY)                                         |
 | `pnpm user:set-password` | Reset the owner password on the server                                                             |
-| `pnpm db:restore <file>` | Load an export JSON (API or nightly archive) into `OWNER_EMAIL`\'s account (idempotent)            |
+| `pnpm db:restore <file>` | Load an export JSON (API or share sheet) into `OWNER_EMAIL`\'s account (idempotent)                |
 
 Test one package: `pnpm --filter @te/core test` (or `pnpm vitest run` inside the package).
 

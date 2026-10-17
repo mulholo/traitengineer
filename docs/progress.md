@@ -170,3 +170,11 @@ Milestone log: date, milestone, what shipped, anything deferred.
   `/v1/me` and `/mcp` → 401, sign-up → 403, OAuth protected-resource metadata served.
 - Smoke-test step failed only because the `PUBLIC_URL` GitHub variable is unset; the custom domain
   (`traitengineer.com`) still points at Namecheap parking (human task H5).
+
+## 2026-10-17 — M9 Remove the nightly archive (owner request)
+
+- **Removed:** `archive.nightly`, the `ArchiveStore` port and GitHub store, `ARCHIVE_REPO` /
+  `ARCHIVE_GITHUB_TOKEN`; the worker now unschedules the job and deletes its queue in existing databases.
+- **Kept:** `GET /v1/export` + share sheet, `pnpm db:restore`, and the restore round-trip test in CI.
+- **Tests:** a worker test seeds the old schedule and queue and checks that starting the worker removes them.
+- **Decisions:** ADR 0033 (supersedes the archive part of 0032).

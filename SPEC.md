@@ -213,7 +213,7 @@ Reminders are scheduled server-side with pg-boss and delivered through Expo's pu
 - **Jobs:**
   - `reminders.dispatch` runs every minute. It selects reminders with `enabled` and `next_fire_at <= now()`, sends to all active devices, sets `last_fired_at`, recomputes `next_fire_at` from the `rrule` in the reminder's time zone. It is idempotent: a reminder fires at most once per occurrence even if the job overlaps or retries.
   - `push.receipts` runs every 15 minutes. It checks Expo push receipts and sets `disabled_at` on devices that return `DeviceNotRegistered`.
-  - `archive.nightly` runs at 03:00 Europe/London (section 11).
+  - ~~`archive.nightly` runs at 03:00 Europe/London (section 11).~~ Removed (ADR 0033).
 - **Payload:** title and body from the reminder; `data.url` is a deep link such as `traitengineer://log/<toolId>`. The iOS notification category includes a "Log now" action that opens the quick-log sheet.
 - **Mobile side:** request permission after first sign-in with a short explanation screen. Register or refresh the Expo push token on every app start via `POST /v1/devices`. Handle taps from a cold start and in the foreground.
 - **Reminder UX:** presets (daily at a time, weekdays at a time, every N hours between two times) that compile to `rrule`; raw `rrule` is not exposed in the UI.
@@ -259,7 +259,7 @@ The web client is the Expo app's web export, served by the API server from the s
 
 ## 11. Persistence, migrations, backups and export
 
-Neon Postgres is the system of record. Point-in-time recovery plus a nightly human-readable archive in a separate GitHub repo protect against losing either the phone or the provider.
+Neon Postgres is the system of record. Point-in-time recovery plus manual exports protect against losing either the phone or the provider. (The nightly GitHub archive was removed as overkill; ADR 0033.)
 
 - **Schema:** Drizzle schema in `packages/db/src/schema/`. Migrations are generated with `drizzle-kit generate`, committed, and never edited after merge.
 - **Migrations run** as a Fly release command before new machines start. A failed migration aborts the deploy.
@@ -337,8 +337,8 @@ Nine milestones, built in order. M0–M5 run fully locally with no accounts; M6 
    - Accept: DST and exactly-once tests pass; a reminder fires to a dev build locally with a real Expo push token (human verifies on device).
 7. **M6 Deploy.** Dockerfile (multi-stage, builds the web export), `fly.toml` with release command, Neon wiring, EAS config, deploy workflow, `docs/deploy.md`.
    - Accept: production is reachable; smoke tests pass; a TestFlight build is installable; an OTA update reaches it.
-8. **M7 Resilience.** Export endpoint and share sheet, nightly archive job, restore script and its CI test.
-   - Accept: the archive repo receives a commit; restore round trip passes in CI.
+8. **M7 Resilience.** Export endpoint and share sheet, ~~nightly archive job~~ (removed, ADR 0033), restore script and its CI test.
+   - Accept: ~~the archive repo receives a commit;~~ restore round trip passes in CI.
 9. **M8 Preview environments (optional).** Neon branch, Fly preview app and EAS preview channel per PR, with teardown.
    - Accept: a PR shows working preview links; closing it deletes the resources.
 
@@ -350,7 +350,7 @@ The agent prepares config and writes exact instructions in `docs/setup.md`. The 
 
 | Step | Produces (env / secret) | Needed by |
 | --- | --- | --- |
-| Create GitHub repo `traitengineer` and private repo `traitengineer-archive` | `ARCHIVE_REPO`, fine-grained `ARCHIVE_GITHUB_TOKEN` | M0, M7 |
+| Create GitHub repo `traitengineer` (~~and private repo `traitengineer-archive`~~, removed in ADR 0033) | — | M0 |
 | Neon project with `main` branch | `DATABASE_URL` (pooled), `DATABASE_URL_DIRECT`; `NEON_API_KEY` for M8 | M6 |
 | Fly.io account and app | `FLY_API_TOKEN` | M6 |
 | Domain and DNS (e.g. `traitengineer.<your-domain>`) pointed at Fly | `PUBLIC_URL` | M6 |

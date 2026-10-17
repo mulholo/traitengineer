@@ -1,6 +1,6 @@
 # 0032. Nightly archive to a private GitHub repo, restore from export JSON
 
-- Status: accepted
+- Status: archive superseded by 0033 (removed); restore from export JSON still accepted
 - Date: 2026-10-15
 
 ## Context

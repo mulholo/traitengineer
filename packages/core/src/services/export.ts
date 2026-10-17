@@ -11,7 +11,7 @@ const field = (label: string, value: unknown) =>
     ? `  - **${label}:** ${value.trim().replaceAll("\n", " ")}\n`
     : "";
 
-/** Human-readable Markdown rendering of an export (used for the nightly archive and the share sheet). */
+/** Human-readable Markdown rendering of an export (used for the share sheet). */
 export function renderExportMarkdown(data: Export): string {
   const tz = data.user.timezone;
   let md = `# Trait Engineer export\n\nExported ${data.exportedAt} · time zone ${tz}\n`;
