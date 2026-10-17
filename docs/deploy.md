@@ -31,7 +31,7 @@ fly secrets set -a traitengineer \
   PUBLIC_URL='https://traitengineer.example.com' \
   OWNER_EMAIL='you@example.com'
 fly deploy --remote-only -a traitengineer           # builds, migrates, starts one machine
-fly ssh console -a traitengineer -C "node apps/api/src/cli/create-owner.ts"   # type the password at the prompt
+fly ssh console --pty -a traitengineer -C "node /app/apps/api/src/cli/create-owner.ts"   # type the password at the prompt
 ```
 
 Then create a `read`-scoped personal access token in Settings → Tokens and save it as the GitHub secret
@@ -63,7 +63,7 @@ machine must always be running for reminders to fire.
   migration.
 - **Roll back the app:** `eas update:republish --channel production` with the previous update group, or
   roll back in the EAS dashboard.
-- **Reset the owner password:** `fly ssh console -a traitengineer -C "node apps/api/src/cli/set-password.ts"`.
+- **Reset the owner password:** `fly ssh console --pty -a traitengineer -C "node /app/apps/api/src/cli/set-password.ts"`.
   This revokes every session.
 - **Run a job now:** reminders dispatch every minute. To check worker health, look for `worker started`
   and `reminders dispatched` in the logs.
@@ -72,7 +72,7 @@ machine must always be running for reminders to fire.
 - **Restore from the archive (provider-independent):** every night at 03:00 Europe/London, `archive.nightly`
   commits `users/<id>/traitengineer.{md,json}` to the private archive repo (`ARCHIVE_REPO`). To rebuild
   anywhere: deploy, create the owner (`user:create-owner`), then
-  `fly ssh console -C "node apps/api/src/cli/restore.ts /tmp/traitengineer.json"` after copying the JSON in
+  `fly ssh console -C "node /app/apps/api/src/cli/restore.ts /tmp/traitengineer.json"` after copying the JSON in
   (`fly ssh sftp shell`), or locally `OWNER_EMAIL=… DATABASE_URL_DIRECT=… pnpm db:restore traitengineer.json`.
   Restores keep IDs and timestamps and are idempotent. The round trip (export → restore → export) runs in CI
   (`packages/db/test/restore.test.ts`).

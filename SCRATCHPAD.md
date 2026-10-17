@@ -79,3 +79,11 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - DNS propagated; Let's Encrypt cert issued; deploy + smoke tests green on https://traitengineer.com.
 - Waiting on human: H10 owner, CI_PERSONAL_ACCESS_TOKEN, H11 connector, H7/H8 Expo+Apple, H13 archive token,
   NEON_PROJECT_ID secret (previews). `gh run view --log` hangs on big logs: use the jobs API instead.
+
+### 2026-10-17 (evening)
+- Human's local `.env` now holds the PRODUCTION Neon URLs: a plain local `pnpm --filter @te/api dev|start` talks to prod.
+  For local runs override: `DATABASE_URL= DATABASE_URL_DIRECT= PGLITE_DIR=<tmp> ROLE=web ...`. Tests don't read .env.
+- Maestro re-verified on isolated PGlite: exit 0, 27 steps (demo password in /tmp/claude-501/demo-pass.txt).
+- Fly runs 2 machines (HA default); both ROLE=all, safe (pg-boss + compare-and-set dispatch).
+- "no started VMs" from `fly ssh console` = mid rolling deploy; retry.
+- human tasks.md rewritten as a short todo list (user request).
