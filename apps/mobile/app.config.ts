@@ -1,13 +1,15 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-// EAS project ID and bundle ID come from env so nothing account-specific is committed (docs/setup.md).
-const projectId = process.env["EAS_PROJECT_ID"];
-const bundleId = process.env["IOS_BUNDLE_ID"] ?? "com.example.traitengineer";
+// Not secrets: committed so `eas-cli` (which can't edit a TS config) finds the project. Env vars override them,
+// e.g. for previews or a fork (docs/setup.md).
+const projectId = process.env["EAS_PROJECT_ID"] || "ec1f0a51-c8b6-490d-8b3d-e3805f4bcdf4";
+const bundleId = process.env["IOS_BUNDLE_ID"] || "com.mulholo.traitengineer";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Trait Engineer",
   slug: "traitengineer",
+  owner: "mulholo",
   scheme: "traitengineer",
   version: "1.0.0",
   orientation: "portrait",
