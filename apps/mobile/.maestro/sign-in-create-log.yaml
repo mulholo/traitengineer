@@ -15,12 +15,19 @@ name: Sign in, create a target, log evidence
 - inputText: ${PASSWORD}
 - tapOn:
     id: "sign-in"
+# iOS may offer to save the password (system sheet); decline it so it doesn't cover the app.
+- runFlow:
+    when:
+      visible: "Save Password?"
+    commands:
+      - tapOn: "Not Now"
 # First sign-in on a device shows the notifications explainer.
 - runFlow:
     when:
       visible: "Gentle reminders"
     commands:
-      - tapOn: "Not now"
+      - tapOn:
+          id: "notifications-skip"
 - assertVisible: "Today"
 - tapOn: "Targets"
 - tapOn:
@@ -28,6 +35,11 @@ name: Sign in, create a target, log evidence
 - tapOn:
     id: "field-title"
 - inputText: "Default to action (Maestro)"
+# Return on a single-line field blurs it and dismisses the keyboard.
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: "save-target"
 - tapOn:
     id: "save-target"
 - assertVisible: "Default to action (Maestro)"
@@ -35,8 +47,16 @@ name: Sign in, create a target, log evidence
 - tapOn:
     id: "log-button"
     index: 0
-# The first field ("What did you do?") is autofocused.
-- inputText: "Logged from Maestro"
+# The first field ("What did you do?") is autofocused. Unique text per run so re-runs against the same
+# database don't match an older entry.
+- evalScript: ${output.note = 'Logged from Maestro ' + Date.now()}
+- inputText: ${output.note}
+# Return on a single-line field blurs it and dismisses the keyboard.
+- pressKey: Enter
 - tapOn:
     id: "save-entry"
-- assertVisible: "Logged from Maestro"
+# Entry cards expose one accessibility label ("Entry: <summary>, <date>"); Maestro text selectors are regexes.
+- scrollUntilVisible:
+    element: ".*${output.note}.*"
+    visibilityPercentage: 50
+- assertVisible: ".*${output.note}.*"
