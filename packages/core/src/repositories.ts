@@ -17,8 +17,6 @@ export interface User {
 
 export interface UserRepository {
   get(userId: string): Promise<User | null>;
-  /** Worker only (not user-scoped): every user ID, for jobs like the nightly archive. */
-  listIds(): Promise<string[]>;
   update(userId: string, patch: Partial<Pick<User, "displayName" | "timezone">>): Promise<User | null>;
 }
 

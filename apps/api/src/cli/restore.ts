@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { loadEnv } from "../env.ts";
 
 // Usage: OWNER_EMAIL=... pnpm db:restore path/to/traitengineer.json
-// Loads an export (GET /v1/export or the nightly archive) into the owner's account. Idempotent.
+// Loads an export (GET /v1/export or the share sheet) into the owner's account. Idempotent.
 const file = process.argv[2];
 if (!file) {
   console.error("Usage: pnpm db:restore <export.json>");

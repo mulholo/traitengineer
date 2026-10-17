@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { createRecordingArchiveStore, createServices, type Services } from "@te/core";
+import { createServices, type Services } from "@te/core";
 import { describe, expect, test } from "vitest";
 import {
   createRepositories,
@@ -11,8 +11,7 @@ import {
 } from "../src/index.ts";
 
 const now = new Date("2026-10-14T12:00:00Z");
-const servicesFor = (h: DbHandle, archive?: ReturnType<typeof createRecordingArchiveStore>) =>
-  createServices({ repos: createRepositories(h.db), now: () => now, ...(archive ? { archive } : {}) });
+const servicesFor = (h: DbHandle) => createServices({ repos: createRepositories(h.db), now: () => now });
 
 /** Exports compared without the parts that legitimately differ between databases. */
 function comparable(data: Awaited<ReturnType<Services["exports"]["exportAll"]>>) {
@@ -68,32 +67,6 @@ describe("export → restore round trip", () => {
       await expect(restoreExport(db.db, id, { version: 2 })).rejects.toThrow(/version|expected/i);
     } finally {
       await db.close();
-    }
-  });
-});
-
-describe("archive.nightly", () => {
-  test("writes Markdown + JSON per user and a README in one snapshot, without emails", async () => {
-    const h = await createTestDb();
-    try {
-      const archive = createRecordingArchiveStore();
-      const { userId } = await seedDemo(h.db, { now });
-      const result = await servicesFor(h, archive).archive.archiveAll();
-      expect(result).toEqual({ users: 1, snapshot: "snapshot-1" });
-      const [snap] = archive.snapshots;
-      expect(snap?.message).toBe("Nightly archive 2026-10-14");
-      expect(snap?.files.map((f) => f.path).sort()).toEqual([
-        "README.md",
-        `users/${userId}/traitengineer.json`,
-        `users/${userId}/traitengineer.md`,
-      ]);
-      const all = snap?.files.map((f) => f.content).join("\n") ?? "";
-      expect(all).toContain("## Default to action rather than over-planning");
-      expect(all).not.toContain("@traitengineer.local");
-      expect(servicesFor(h).archive.configured).toBe(false);
-      expect(await servicesFor(h).archive.archiveAll()).toEqual({ users: 0, snapshot: null });
-    } finally {
-      await h.close();
     }
   });
 });
