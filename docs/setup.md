@@ -66,8 +66,9 @@ run `pnpm user:set-password` the same way.
 ### 8. Apple (M5, M6)
 
 1. Enrol in the Apple Developer Program.
-2. Choose the bundle ID (placeholder `com.example.traitengineer`; tell the agent the real one).
-3. Create the App Store Connect app record. Let EAS manage certificates and the APNs push key
+2. Register the bundle ID `com.mulholo.traitengineer` (Push Notifications + Associated Domains).
+3. Create the App Store Connect app record. Its Apple ID (`6836528699`) is `submit.production.ios.ascAppId`
+   in `apps/mobile/eas.json`. Let EAS manage certificates, the APNs push key and an App Store Connect API key
    (`npx eas-cli credentials`).
 4. Set the GitHub variable `IOS_RELEASE=true` so the deploy workflow starts building and submitting.
 
