@@ -6,14 +6,15 @@ import type { Logger } from "../logger.ts";
 export const JOBS = {
   dispatchReminders: "reminders.dispatch",
   pushReceipts: "push.receipts",
-  archiveNightly: "archive.nightly",
 } as const;
+
+/** Jobs that no longer exist. Their cron schedules live in the database, so remove them on start (ADR 0033). */
+const RETIRED_JOBS = ["archive.nightly"] as const;
 
 /** Cron schedules (pg-boss evaluates them server-side, so they survive restarts and run once per tick). */
 export const SCHEDULES = [
   { name: JOBS.dispatchReminders, cron: "* * * * *", tz: "UTC" },
   { name: JOBS.pushReceipts, cron: "*/15 * * * *", tz: "UTC" },
-  { name: JOBS.archiveNightly, cron: "0 3 * * *", tz: "Europe/London" },
 ] as const;
 
 export interface WorkerOptions {
@@ -50,17 +51,11 @@ export async function startWorker(opts: WorkerOptions) {
     return result;
   });
 
-  await boss.work(JOBS.archiveNightly, async () => {
-    if (!services.archive.configured) {
-      logger.warn("archive.nightly skipped: ARCHIVE_REPO / ARCHIVE_GITHUB_TOKEN not set");
-      return { users: 0, snapshot: null };
-    }
-    const result = await services.archive.archiveAll();
-    logger.info(result, "nightly archive written");
-    return result;
-  });
-
   if (schedule) {
+    for (const name of RETIRED_JOBS) {
+      await boss.unschedule(name);
+      if (await boss.getQueue(name)) await boss.deleteQueue(name);
+    }
     for (const s of SCHEDULES) await boss.schedule(s.name, s.cron, null, { tz: s.tz });
   }
   logger.info({ jobs: Object.values(JOBS) }, "worker started");

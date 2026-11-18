@@ -19,9 +19,6 @@ export function createRepositories(db: Database): Repositories {
         const [row] = await db.select().from(users).where(eq(users.id, userId));
         return row ? toUser(row) : null;
       },
-      async listIds() {
-        return (await db.select({ id: users.id }).from(users).orderBy(users.createdAt)).map((r) => r.id);
-      },
       async update(userId, patch) {
         if (Object.keys(patch).length === 0) return this.get(userId);
         const [row] = await db.update(users).set(patch).where(eq(users.id, userId)).returning();

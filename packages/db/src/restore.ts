@@ -12,7 +12,7 @@ export interface RestoreResult {
 }
 
 /**
- * Load an export (from `GET /v1/export` or the nightly archive) into the database for `userId`, preserving IDs
+ * Load an export (from `GET /v1/export` or the share sheet) into the database for `userId`, preserving IDs
  * and timestamps. Idempotent: rows that already exist are left alone, so a restore can be re-run safely.
  * Entries whose tool was deleted before the export get a deleted placeholder tool so no evidence is dropped.
  */
