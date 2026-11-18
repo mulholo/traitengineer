@@ -82,6 +82,12 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+      # The app config must evaluate identically here (fingerprint, `eas update`) and on the EAS build server, which
+      # only sees eas.json's profile env. So the production profile's env in eas.json is the single source.
+      - name: Load the production build env from eas.json
+        if: steps.gate.outputs.enabled == 'true'
+        working-directory: apps/mobile
+        run: node -e 'for (const [k, v] of Object.entries(require("./eas.json").build.production.env)) console.log(`${k}=${v}`)' >> "$GITHUB_ENV"
       # Same fingerprint as an existing build → `eas update` (OTA); otherwise a new build, auto-submitted.
       - uses: expo/expo-github-action/continuous-deploy-fingerprint@main
         if: steps.gate.outputs.enabled == 'true'
@@ -93,8 +99,3 @@ jobs:
           branch: production
           environment: production
           auto-submit-builds: true
-        env:
-          EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
-          IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
-          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
-          EXPO_PUBLIC_API_URL: ${{ vars.PUBLIC_URL }}
