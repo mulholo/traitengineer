@@ -17,9 +17,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: bundleId,
     supportsTablet: true,
-    ...(process.env["PUBLIC_URL"]
-      ? { associatedDomains: [`applinks:${new URL(process.env["PUBLIC_URL"]).host}`] }
-      : {}),
+    // No associatedDomains until the API serves apple-app-site-association (native passkeys, ADR 0029); the
+    // entitlement also needs the Associated Domains capability on the App ID and a regenerated profile.
   },
   android: { package: bundleId },
   web: { bundler: "metro", output: "single" },
