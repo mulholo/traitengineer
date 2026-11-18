@@ -21,7 +21,6 @@
       "autoIncrement": true,
       "environment": "production",
       "env": {
-        "PUBLIC_URL": "https://traitengineer.com",
         "EXPO_PUBLIC_API_URL": "https://traitengineer.com"
       }
     },
