@@ -10,8 +10,9 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - [x] M4 Mobile and web (PR #3; iOS 27 simulator verified in M5)
 - [x] M5 Notifications (PR #4; real-device push = human H15)
 - [~] M6 Deploy: LIVE at https://traitengineer.com (deploy + smoke green, run 39028743154); TestFlight/OTA wait on H7/H8
-- [~] M7 Resilience: merged (PR #6); first real archive commit needs H13
+- [x] M7 Resilience: merged (PR #6); nightly archive later removed in M9
 - [~] M8 Preview environments: workflow on feat/m8-previews; needs Neon API key + Fly
+- [x] M9 Remove the nightly GitHub archive (owner: "OTT for this use case"): job, port, GitHub store, env vars, docs; worker unschedules the leftover cron. ADR 0033
 
 ## Environment notes
 - Node v22.17.1, pnpm 10.24.0. Sandbox blocks writes to ~/.npm → use `npm_config_cache=$TMPDIR/npm-cache` for `npm view`.

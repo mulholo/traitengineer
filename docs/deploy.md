@@ -51,6 +51,7 @@ Then create a `read`-scoped personal access token in Settings → Tokens and sav
 | `NODE_ENV`, `ROLE`, `PORT`, `WEB_DIST_DIR`, `CLIENT_IP_HEADER` | `fly.toml` `[env]`           |                                                                         |
 | `FLY_API_TOKEN`, `EXPO_TOKEN`, `CI_PERSONAL_ACCESS_TOKEN`      | GitHub secrets               |                                                                         |
 | `FLY_APP`, `PUBLIC_URL`, `EAS_PROJECT_ID`, `IOS_BUNDLE_ID`     | GitHub variables             |                                                                         |
+| `IOS_RELEASE`                                                  | GitHub variable              | `true` once Apple credentials are in EAS; gates the mobile deploy job   |
 
 `auto_stop_machines` is off and `min_machines_running = 1`: the reminder worker shares the process, so a
 machine must always be running for reminders to fire.
@@ -69,9 +70,8 @@ machine must always be running for reminders to fire.
   and `reminders dispatched` in the logs.
 - **Database restore (provider-level):** Neon point-in-time restore (branch from a timestamp, then point
   `DATABASE_URL*` at it).
-- **Restore from the archive (provider-independent):** every night at 03:00 Europe/London, `archive.nightly`
-  commits `users/<id>/traitengineer.{md,json}` to the private archive repo (`ARCHIVE_REPO`). To rebuild
-  anywhere: deploy, create the owner (`user:create-owner`), then
+- **Restore from an export (provider-independent):** take an export with `GET /v1/export` or Settings →
+  Export (JSON). To rebuild anywhere: deploy, create the owner (`user:create-owner`), then
   `fly ssh console -C "node /app/apps/api/src/cli/restore.ts /tmp/traitengineer.json"` after copying the JSON in
   (`fly ssh sftp shell`), or locally `OWNER_EMAIL=… DATABASE_URL_DIRECT=… pnpm db:restore traitengineer.json`.
   Restores keep IDs and timestamps and are idempotent. The round trip (export → restore → export) runs in CI
@@ -90,7 +90,7 @@ docker run --rm -p 8080:8080 -e NODE_ENV=development -e BETTER_AUTH_SECRET="$(op
 `.github/workflows/preview.yml` gives each PR its own environment once `NEON_API_KEY`, `NEON_PROJECT_ID` and
 `FLY_API_TOKEN` are set:
 
-- a Neon branch `preview/pr-<n>` of `main` (so the owner signs in with their normal password),
+- a Neon branch `preview/pr-<n>` of the project's default (production) branch (so the owner signs in with their normal password),
 - a Fly app `<FLY_APP>-pr-<n>` deployed from the PR (migrations run on the branch, so schema changes are tested
   against a copy of real data),
 - an EAS update on the `preview` channel pointed at that API (when `EAS_PROJECT_ID` is set),

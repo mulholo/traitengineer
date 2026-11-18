@@ -17,13 +17,10 @@ with a dev-only password, and push uses an Expo dev build. The human-only steps 
 Do these in order; each lists what it produces and where it goes. **Never commit any value below.** Runtime
 values go into Fly secrets (`fly secrets set`), CI values into GitHub Actions secrets.
 
-### 1. GitHub repos (M0, M7)
+### 1. GitHub repo (M0)
 
 1. Create the repo `traitengineer` and push this repo to it (`git remote add origin ... && git push -u origin main`).
-2. Create a **private** repo `traitengineer-archive` with an initial commit (e.g. a README).
-3. Create a fine-grained personal access token limited to `traitengineer-archive` with **Contents: read and write**.
-4. Produces: `ARCHIVE_REPO=<owner>/traitengineer-archive`, `ARCHIVE_GITHUB_TOKEN` → Fly secrets.
-5. Repo settings for `traitengineer`: protect `main` (require the `CI / check` status), allow squash merge
+2. Repo settings for `traitengineer`: protect `main` (require the `CI / check` status), allow squash merge
    only, install the Renovate GitHub app for this repo.
 
 ### 2. Neon (M6)
@@ -73,6 +70,7 @@ run `pnpm user:set-password` the same way.
 3. Create the App Store Connect app record. Its Apple ID (`6836528699`) is `submit.production.ios.ascAppId`
    in `apps/mobile/eas.json`. Let EAS manage certificates, the APNs push key and an App Store Connect API key
    (`npx eas-cli credentials`).
+4. Set the GitHub variable `IOS_RELEASE=true` so the deploy workflow starts building and submitting.
 
 ### 9. Sentry (optional, M6)
 
@@ -103,6 +101,7 @@ Settings → Secrets and variables → Actions. The deploy workflow skips each p
 | `PUBLIC_URL`                      | variable | `https://…` production origin, for smoke tests and the app build                    |
 | `EAS_PROJECT_ID`                  | variable | From `npx eas-cli init` in `apps/mobile`                                            |
 | `IOS_BUNDLE_ID`                   | variable | e.g. `com.yourname.traitengineer` (default placeholder `com.example.traitengineer`) |
+| `IOS_RELEASE`                     | variable | `true` once Apple credentials are in EAS; until then the mobile deploy job skips    |
 
 ## Using the MCP server locally
 
