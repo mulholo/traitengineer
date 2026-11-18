@@ -11,7 +11,7 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - [x] M5 Notifications (PR #4; real-device push = human H15)
 - [~] M6 Deploy: LIVE at https://traitengineer.com (deploy + smoke green, run 39028743154); TestFlight/OTA wait on H7/H8
 - [x] M7 Resilience: merged (PR #6); nightly archive later removed in M9
-- [~] M8 Preview environments: workflow on feat/m8-previews; needs Neon API key + Fly
+- [~] M8 Preview environments: merged (#8); first full run pending the Fly org token (set 2026-11-18)
 - [x] M9 Remove the nightly GitHub archive (owner: "OTT for this use case"): job, port, GitHub store, env vars, docs; worker unschedules the leftover cron. ADR 0033
 
 ## Environment notes
@@ -88,3 +88,10 @@ Read SPEC.md + this file + `human tasks.md` (local only, gitignored — never co
 - Fly runs 2 machines (HA default); both ROLE=all, safe (pg-boss + compare-and-set dispatch).
 - "no started VMs" from `fly ssh console` = mid rolling deploy; retry.
 - human tasks.md rewritten as a short todo list (user request).
+
+### 2026-11-18
+- Merged #19 (IOS_RELEASE gate, Neon default branch), #20 (M9), #21 (ascAppId 6836528699). Repo auto-merge now on.
+- Apple done: App Store Connect app, push key, ASC API key (App Manager), dist cert + profile (expire 2027-11-18).
+- GitHub `vars` are snapshotted when a workflow run starts: the #20 deploy skipped iOS though IOS_RELEASE was set
+  before its mobile job ran. First TestFlight build comes from the #21 deploy.
+- FLY_API_TOKEN replaced with an org token so previews can create `traitengineer-pr-<n>`.
