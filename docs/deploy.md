@@ -53,6 +53,10 @@ Then create a `read`-scoped personal access token in Settings → Tokens and sav
 | `FLY_APP`, `PUBLIC_URL`, `EAS_PROJECT_ID`, `IOS_BUNDLE_ID`     | GitHub variables             |                                                                         |
 | `IOS_RELEASE`                                                  | GitHub variable              | `true` once Apple credentials are in EAS; gates the mobile deploy job   |
 
+The iOS build's own config (`PUBLIC_URL`, `EXPO_PUBLIC_API_URL`) lives in `apps/mobile/eas.json` under
+`build.production.env`, not in GitHub variables: EAS build servers only see that env, and the deploy job loads the
+same values so its fingerprint and `eas update` match the build.
+
 `auto_stop_machines` is off and `min_machines_running = 1`: the reminder worker shares the process, so a
 machine must always be running for reminders to fire.
 

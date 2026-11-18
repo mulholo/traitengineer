@@ -20,6 +20,11 @@ output) is served by `@te/api` from the same origin, so web uses the session coo
   notifications once after first sign-in before iOS asks. Needs an EAS project ID for push tokens.
 - **iOS 27:** `plugins/with-scene-lifecycle.js` adopts the UIScene life cycle (ADR 0030). `ios/` is generated
   by `expo prebuild`; never edit it by hand.
+- **Release builds:** production build config (`PUBLIC_URL`, `EXPO_PUBLIC_API_URL`) is in `eas.json`
+  `build.production.env`, the only env EAS build servers see. `.fingerprintignore` excludes `ios/`/`android/`
+  because EAS fingerprints without git metadata. Every Babel preset/plugin named in `babel.config.js` (or named
+  as a string by a preset, e.g. NativeWind's `@babel/plugin-transform-react-jsx`) must be a direct dependency:
+  `eas update` and the Xcode bundling phase run Expo without pnpm's `NODE_PATH`, so hoisted packages aren't found.
 - **Platform code:** `*.native.ts` / `*.ts` (web) pairs in `src/platform/` and `src/auth/passkey*`.
 - **Tools:** `src/tools/<type>/{QuickLogForm,EntryCard}.tsx`, registered in `src/tools/index.ts` as a complete
   `Record<ToolType, ToolUi>` (typecheck fails if a registry type has no UI).
