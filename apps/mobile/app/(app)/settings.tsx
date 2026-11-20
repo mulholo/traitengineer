@@ -1,10 +1,9 @@
 import * as Localization from "expo-localization";
 import { useState, type ReactNode } from "react";
-import { Platform, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { addPasskey, passkeysSupported } from "../../src/auth/passkey";
 import { useAuth } from "../../src/auth/session";
 import {
-  fetchExport,
   useChangePassword,
   useCreateToken,
   useDeletePasskey,
@@ -17,7 +16,6 @@ import {
   useTokens,
   useUpdateMe,
 } from "../../src/features/settings/hooks";
-import { shareExport } from "../../src/platform/share";
 import {
   Body,
   Button,
@@ -347,50 +345,6 @@ function Tokens() {
   );
 }
 
-function Export() {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<unknown>();
-  async function run(format: "json" | "markdown") {
-    setBusy(true);
-    setError(undefined);
-    try {
-      const contents = await fetchExport(format);
-      const stamp = new Date().toISOString().slice(0, 10);
-      await shareExport(
-        `traitengineer-${stamp}.${format === "json" ? "json" : "md"}`,
-        contents,
-        format === "json" ? "application/json" : "text/markdown",
-      );
-    } catch (e) {
-      setError(e);
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <Section title="Export">
-      <View className="gap-3 px-2 pt-2">
-        <Body muted>Everything you've recorded, as Markdown (readable) or JSON (complete).</Body>
-        <ErrorText error={error} />
-        <View className="flex-row flex-wrap gap-2">
-          <Button
-            label={Platform.OS === "web" ? "Download Markdown" : "Share Markdown"}
-            variant="secondary"
-            busy={busy}
-            onPress={() => void run("markdown")}
-          />
-          <Button
-            label={Platform.OS === "web" ? "Download JSON" : "Share JSON"}
-            variant="secondary"
-            busy={busy}
-            onPress={() => void run("json")}
-          />
-        </View>
-      </View>
-    </Section>
-  );
-}
-
 /** Settings: one page of sections, each a band over a spec line, a table with its actions, or a short form. */
 export default function Settings() {
   const { signOut } = useAuth();
@@ -403,7 +357,6 @@ export default function Settings() {
       <Sessions />
       <Devices />
       <Tokens />
-      <Export />
       <View className="items-start border-t border-rule px-2 pt-3">
         <Button label="Sign out" variant="danger" onPress={() => void signOut()} testID="sign-out" />
       </View>
