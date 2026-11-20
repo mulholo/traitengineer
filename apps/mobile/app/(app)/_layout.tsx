@@ -32,6 +32,7 @@ export default function AppLayout() {
         <Tabs.Screen name="index" options={{ title: "Today" }} />
         <Tabs.Screen name="targets" options={{ title: "Targets", popToTopOnBlur: true }} />
         <Tabs.Screen name="reminders" options={{ title: "Reminders" }} />
+        <Tabs.Screen name="meditations" options={{ title: "Meditations" }} />
         <Tabs.Screen name="settings" options={{ title: "Settings" }} />
         <Tabs.Screen name="entries/[id]" options={{ href: null }} />
       </Tabs>
