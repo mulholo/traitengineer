@@ -37,9 +37,9 @@ const COL = {
   target: "flex-[3]",
   oldPattern: "hidden flex-[2] xl:flex",
   desiredDefault: "hidden flex-[2] lg:flex",
-  entries: "w-12 md:w-14",
+  entries: "w-14 md:w-16",
   weeks: "hidden w-[94px] lg:flex",
-  streak: "hidden w-12 md:flex",
+  streak: "hidden w-14 md:flex",
   since: "w-16 md:w-[68px]",
 };
 const ROW_GAP = "gap-2 md:gap-3";
