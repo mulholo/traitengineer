@@ -33,7 +33,7 @@ output) is served by `@te/api` from the same origin, so web uses the session coo
   `src/ui/index.tsx`; colour tokens (`paper`, `ink`, `dim`, `rule`, `rule-strong`, `band`, `link`, `mark`,
   `alert`) in `global.css` + `tailwind.config.js`. Every control ≥44pt with an accessibility label (an e2e test
   measures it). Every screen must render on web.
-- **Commands:** `pnpm --filter @te/mobile web` (dev; set `EXPO_PUBLIC_API_URL=http://localhost:3000`),
+- **Commands:** `pnpm --filter @te/mobile web` (dev; talks to the API on :3000 of the same host unless `EXPO_PUBLIC_API_URL` is set),
   `pnpm --filter @te/mobile build` (web export to `dist/web`), `pnpm --filter @te/mobile test` (jest-expo),
   `pnpm --filter @te/mobile e2e` (Playwright; builds must exist; starts the API itself and writes screenshots
   to `docs/screenshots/`), `pnpm --filter @te/mobile ios` (dev build in the simulator; needs Xcode).
