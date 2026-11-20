@@ -71,6 +71,8 @@ run `pnpm user:set-password` the same way.
    in `apps/mobile/eas.json`. Let EAS manage certificates, the APNs push key and an App Store Connect API key
    (`npx eas-cli credentials`).
 4. Set the GitHub variable `IOS_RELEASE=true` so the deploy workflow starts building and submitting.
+5. Copy the Team ID (developer.apple.com → Membership details, 10 characters) into `APPLE_TEAM_ID` in
+   `fly.toml` `[env]`. It is public (it appears in the association file), not a secret.
 
 ### 9. Sentry (optional, M6)
 

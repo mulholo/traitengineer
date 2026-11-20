@@ -5,6 +5,18 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 const projectId = process.env["EAS_PROJECT_ID"] || "ec1f0a51-c8b6-490d-8b3d-e3805f4bcdf4";
 const bundleId = process.env["IOS_BUNDLE_ID"] || "com.mulholo.traitengineer";
 
+/**
+ * Shared web credentials: ties the app to the API's domain so password managers offer its saved logins in the
+ * app (and native passkeys can use it later). The API serves the matching apple-app-site-association
+ * (apps/api/src/http/app-links.ts). Only for a real https host; local and dev builds have none.
+ */
+function associatedDomains(apiUrl: string | undefined): string[] {
+  if (!apiUrl?.startsWith("https://")) return [];
+  const host = new URL(apiUrl).hostname;
+  return host.endsWith(".example.com") ? [] : [`webcredentials:${host}`];
+}
+const iosAssociatedDomains = associatedDomains(process.env["EXPO_PUBLIC_API_URL"]);
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Trait Engineer",
@@ -17,8 +29,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: bundleId,
     supportsTablet: true,
-    // No associatedDomains until the API serves apple-app-site-association (native passkeys, ADR 0029); the
-    // entitlement also needs the Associated Domains capability on the App ID and a regenerated profile.
+    // EAS syncs the Associated Domains capability to the App ID and regenerates the profile on the next build.
+    ...(iosAssociatedDomains.length ? { associatedDomains: iosAssociatedDomains } : {}),
   },
   android: { package: bundleId },
   web: { bundler: "metro", output: "single" },
