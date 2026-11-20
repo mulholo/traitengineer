@@ -7,11 +7,12 @@ import {
   type UpdateReminder,
 } from "@te/contracts";
 import { NotFoundError, ValidationError } from "../errors.ts";
-import { LOG_CATEGORY, type PushSender } from "../push.ts";
+import { LOG_CATEGORY, type PushMessage, type PushSender } from "../push.ts";
 import type { NewReminder, ReminderRecord } from "../repositories.ts";
 import { nextOccurrence, rruleToSchedule, scheduleToRrule } from "../schedule.ts";
 import { compact, parseOrThrow } from "../validate.ts";
 import type { ServiceDeps } from "./context.ts";
+import { recordTickets } from "./push-tickets.ts";
 
 export type ReminderService = ReturnType<typeof createReminderService>;
 
@@ -24,7 +25,8 @@ export function reminderUrl(r: Pick<ReminderRecord, "toolId">): string {
   return r.toolId ? `traitengineer://log/${r.toolId}` : "traitengineer://";
 }
 
-export function createReminderService({ repos, now }: ServiceDeps, push: PushSender) {
+export function createReminderService(deps: ServiceDeps, push: PushSender) {
+  const { repos, now } = deps;
   async function checkLinks(
     userId: string,
     toolId: string | null | undefined,
@@ -110,22 +112,26 @@ export function createReminderService({ repos, now }: ServiceDeps, push: PushSen
       if (!(await repos.reminders.delete(userId, id))) throw new NotFoundError("Reminder", id);
     },
 
-    /** Send this reminder to every active device now. Does not change its schedule. */
-    async sendTest(userId: string, id: string): Promise<{ devices: number }> {
+    /**
+     * Send this reminder to every active device now. Does not change its schedule. `failed` counts devices Expo
+     * refused at once, with its reasons in `errors`; delivery problems found later show up in the push receipts.
+     */
+    async sendTest(
+      userId: string,
+      id: string,
+    ): Promise<{ devices: number; failed: number; errors: string[] }> {
       const r = await getRecord(userId, id);
       const devices = (await repos.devices.list(userId)).filter((d) => d.disabledAt === null);
-      if (devices.length > 0) {
-        await push.send(
-          devices.map((d) => ({
-            to: d.expoPushToken,
-            title: r.title,
-            body: r.body,
-            data: { url: reminderUrl(r), reminderId: r.id, test: true },
-            categoryId: LOG_CATEGORY,
-          })),
-        );
-      }
-      return { devices: devices.length };
+      if (devices.length === 0) return { devices: 0, failed: 0, errors: [] };
+      const batch: PushMessage[] = devices.map((d) => ({
+        to: d.expoPushToken,
+        title: r.title,
+        body: r.body,
+        data: { url: reminderUrl(r), reminderId: r.id, test: true },
+        categoryId: LOG_CATEGORY,
+      }));
+      const tickets = await push.send(batch);
+      return { devices: devices.length, ...(await recordTickets(deps, userId, batch, tickets)) };
     },
   };
 }

@@ -48,6 +48,7 @@ export async function startWorker(opts: WorkerOptions) {
   await boss.work(JOBS.pushReceipts, async () => {
     const result = await services.notifications.checkReceipts();
     if (result.checked > 0) logger.info(result, "push receipts checked");
+    if (result.errors.length > 0) logger.warn({ errors: result.errors }, "push receipts reported errors");
     return result;
   });
 

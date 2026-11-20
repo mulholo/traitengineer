@@ -29,7 +29,6 @@ export const evidenceLogPayloadSchema = z
     uncertain: longText.optional().meta({ description: "What remains uncertain" }),
     details: longText.optional().meta({ description: "Any other notes" }),
     difficulty: z.number().int().min(1).max(5).optional().meta({ description: "1 (easy) to 5 (very hard)" }),
-    tags: z.array(z.string().trim().min(1).max(50)).max(10).default([]),
   })
   .meta({ id: "EvidenceLogPayload" });
 export type EvidenceLogPayload = z.infer<typeof evidenceLogPayloadSchema>;
@@ -92,7 +91,7 @@ export const evidenceLog = {
   description:
     "A log of concrete moments where the user acted on (or against) the desired default. Each entry's payload has " +
     "`summary` (required, ≤280 chars: what they did), optional `expected`, `happened`, `supports`, `uncertain`, " +
-    "`details`, `difficulty` (1–5) and `tags` (≤10 strings).",
+    "`details` and `difficulty` (1–5).",
   configSchema: evidenceLogConfigSchema,
   payloadSchema: evidenceLogPayloadSchema,
   summarySchema: evidenceLogSummarySchema,

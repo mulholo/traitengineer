@@ -164,7 +164,6 @@ export function createRepositories(db: Database): Repositories {
         if (q.toolId) where.push(eq(entries.toolId, q.toolId));
         if (q.since) where.push(gte(entries.occurredAt, new Date(q.since)));
         if (q.until) where.push(lte(entries.occurredAt, new Date(q.until)));
-        if (q.tag) where.push(sql`${entries.payload} -> 'tags' @> ${JSON.stringify([q.tag])}::jsonb`);
         if (q.after) {
           where.push(
             sql`(${entries.occurredAt}, ${entries.id}) < (${q.after.occurredAt}::timestamptz, ${q.after.id}::uuid)`,

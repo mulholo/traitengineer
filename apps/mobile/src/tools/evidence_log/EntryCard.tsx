@@ -38,7 +38,7 @@ function whenParts(iso: string): { date: string; time: string } {
 
 /**
  * One entry as a ruled table row: when it happened in a narrow left column, the summary as the main cell with
- * the other fields folded under it, then tool, difficulty and tags as small dim text. The whole row is
+ * the other fields folded under it, then tool and difficulty as small dim text. The whole row is
  * pressable when `onPress` is given.
  */
 export function EntryCard({ entry, toolName, onPress }: EntryCardProps) {
@@ -49,11 +49,9 @@ export function EntryCard({ entry, toolName, onPress }: EntryCardProps) {
     timeStyle: "short",
   });
   const { date, time } = whenParts(entry.occurredAt);
-  const tags = Array.isArray(p["tags"]) ? (p["tags"] as string[]) : [];
   const meta = [
     toolName,
     typeof p["difficulty"] === "number" ? `difficulty ${p["difficulty"]}/5` : undefined,
-    ...tags.map((t) => `#${t}`),
   ].filter((s): s is string => !!s);
   return (
     <Pressable

@@ -61,7 +61,16 @@ export function registerReminderRoutes(app: OpenAPIHono<AppEnv>, s: Services) {
       path: "/v1/reminders/{id}/test",
       summary: "Send this reminder to all active devices now",
       request: { params: idParams },
-      responses: { 200: json(z.object({ devices: z.number().int() }), "Number of devices notified") },
+      responses: {
+        200: json(
+          z.object({
+            devices: z.number().int().describe("Active devices the test was sent to"),
+            failed: z.number().int().describe("Devices the push service refused straight away"),
+            errors: z.array(z.string()).describe("Distinct reasons the push service gave for those refusals"),
+          }),
+          "Result of the test send",
+        ),
+      },
     }),
     async (c) => c.json(await s.reminders.sendTest(userIdOf(c), c.req.valid("param").id), 200),
   );

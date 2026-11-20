@@ -11,10 +11,10 @@ describe("evidence_log schemas", () => {
     expect(evidenceLogPayloadSchema.safeParse({}).success).toBe(false);
     expect(evidenceLogPayloadSchema.safeParse({ summary: "   " }).success).toBe(false);
     expect(evidenceLogPayloadSchema.safeParse({ summary: "x".repeat(281) }).success).toBe(false);
-    expect(evidenceLogPayloadSchema.parse({ summary: "Sent it" })).toEqual({ summary: "Sent it", tags: [] });
+    expect(evidenceLogPayloadSchema.parse({ summary: "Sent it" })).toEqual({ summary: "Sent it" });
   });
 
-  test("payload accepts the reflection fields, difficulty 1–5 and at most 10 tags", () => {
+  test("payload accepts the reflection fields, and difficulty 1–5", () => {
     const full = {
       summary: "Sent the proposal without a third rewrite",
       expected: "They would think it was sloppy",
@@ -22,18 +22,14 @@ describe("evidence_log schemas", () => {
       supports: "Good enough is good enough",
       uncertain: "Whether this generalises to bigger clients",
       difficulty: 3,
-      tags: ["work"],
     };
     expect(evidenceLogPayloadSchema.parse(full)).toEqual(full);
     expect(evidenceLogPayloadSchema.safeParse({ summary: "a", difficulty: 6 }).success).toBe(false);
     expect(evidenceLogPayloadSchema.safeParse({ summary: "a", difficulty: 2.5 }).success).toBe(false);
-    expect(evidenceLogPayloadSchema.safeParse({ summary: "a", tags: Array(11).fill("t") }).success).toBe(
-      false,
-    );
   });
 });
 
-const at = (iso: string) => ({ occurredAt: iso, payload: { summary: "x", tags: [] } });
+const at = (iso: string) => ({ occurredAt: iso, payload: { summary: "x" } });
 
 describe("evidence_log summarise", () => {
   const tz = "Europe/London";
