@@ -9,7 +9,6 @@ export function toUser(r: typeof users.$inferSelect): User {
   return {
     id: r.id,
     email: r.email,
-    displayName: r.displayName,
     timezone: r.timezone,
     createdAt: iso(r.createdAt),
     updatedAt: iso(r.updatedAt),

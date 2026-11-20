@@ -11,7 +11,7 @@ const SCOPE_TEXT: Record<string, string> = {
   read: "Read your change targets, tools, entries and summaries",
   write: "Create and update change targets and log entries on your behalf",
   openid: "Know which account you signed in with",
-  profile: "See your display name",
+  profile: "See your basic account profile",
   offline_access: "Stay connected without asking you to sign in again",
 };
 

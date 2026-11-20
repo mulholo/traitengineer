@@ -5,6 +5,9 @@ import { id, timestamps } from "./columns.ts";
 /**
  * Owned by Better Auth (model `user`, mapped to this table), extended with `timezone`. Better Auth field
  * `name` maps to `display_name`. The password hash lives in Better Auth's `accounts` table, never here.
+ *
+ * `display_name` is not a product feature (ADR 0035): no API, MCP tool or screen reads or writes it. It stays
+ * only because Better Auth's core user model requires a non-null `name`.
  */
 export const users = pgTable(
   "users",
