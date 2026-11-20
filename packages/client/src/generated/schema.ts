@@ -769,7 +769,6 @@ export interface paths {
                     cursor?: string;
                     limit?: number;
                     since?: string;
-                    tag?: string;
                     /** @description UUIDv7 identifier */
                     toolId?: string;
                     until?: string;

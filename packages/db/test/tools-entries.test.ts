@@ -1,5 +1,8 @@
 import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, test } from "vitest";
+import { entries } from "../src/schema/index.ts";
 import { useHarness } from "./harness.ts";
 
 const h = useHarness();
@@ -85,7 +88,6 @@ describe("entries", () => {
         summary: "Sent the proposal without a third rewrite",
         happened: "Signed same day",
         difficulty: 3,
-        tags: [],
       },
     });
   });
@@ -121,21 +123,53 @@ describe("entries", () => {
     expect(results.filter((r) => r.created)).toHaveLength(1);
   });
 
-  test("list filters by target, tool, time range and tag, newest first, with cursor pagination", async () => {
+  test("create drops the retired tags field sent by older clients", async () => {
+    const { u, tool } = await setup();
+    const { entry } = await h.services.entries.create(u, {
+      toolId: tool.id,
+      clientId: randomUUID(),
+      payload: { summary: "Old app", tags: ["work"] },
+    });
+    expect(entry.payload).toEqual({ summary: "Old app" });
+  });
+
+  test("migration 0004 strips legacy tags from stored payloads", async () => {
+    const { u, tool } = await setup();
+    const { entry } = await h.services.entries.create(u, {
+      toolId: tool.id,
+      clientId: randomUUID(),
+      payload: { summary: "Tagged long ago", difficulty: 2 },
+    });
+    await h.handle.db
+      .update(entries)
+      .set({ payload: { summary: "Tagged long ago", difficulty: 2, tags: ["work"] } })
+      .where(eq(entries.id, entry.id));
+    const migration = await readFile(
+      new URL("../migrations/0004_drop_entry_tags.sql", import.meta.url),
+      "utf8",
+    );
+    await h.handle.db.execute(sql.raw(migration));
+    expect((await h.services.entries.get(u, entry.id)).payload).toEqual({
+      summary: "Tagged long ago",
+      difficulty: 2,
+    });
+  });
+
+  test("list filters by target, tool and time range, newest first, with cursor pagination", async () => {
     const { u, target, tool } = await setup();
     const other = await h.services.changeTargets.create(u, { title: "Other" });
     const otherTool = await h.services.tools.create(u, { changeTargetId: other.id, type: "evidence_log" });
-    const log = (toolId: string, occurredAt: string, tags: string[] = []) =>
+    const log = (toolId: string, occurredAt: string) =>
       h.services.entries.create(u, {
         toolId,
         clientId: randomUUID(),
         occurredAt,
-        payload: { summary: occurredAt, tags },
+        payload: { summary: occurredAt },
       });
-    await log(tool.id, "2026-10-01T09:00:00Z", ["work"]);
+    await log(tool.id, "2026-10-01T09:00:00Z");
     await log(tool.id, "2026-10-05T09:00:00+01:00");
-    await log(tool.id, "2026-10-10T09:00:00Z", ["work", "home"]);
-    await log(otherTool.id, "2026-10-11T09:00:00Z", ["work"]);
+    await log(tool.id, "2026-10-10T09:00:00Z");
+    await log(otherTool.id, "2026-10-11T09:00:00Z");
 
     const all = await h.services.entries.list(u, {});
     expect(all.items.map((e) => e.occurredAt)).toEqual([
@@ -151,11 +185,6 @@ describe("entries", () => {
       until: "2026-10-10T09:00:00Z",
     });
     expect(ranged.items).toHaveLength(2);
-    const tagged = await h.services.entries.list(u, { tag: "work", changeTargetId: target.id });
-    expect(tagged.items.map((e) => e.occurredAt)).toEqual([
-      "2026-10-10T09:00:00.000Z",
-      "2026-10-01T09:00:00.000Z",
-    ]);
 
     const p1 = await h.services.entries.list(u, { limit: 3 });
     const p2 = await h.services.entries.list(u, { limit: 3, cursor: p1.nextCursor ?? "" });
@@ -194,13 +223,13 @@ describe("entries", () => {
     const { entry } = await h.services.entries.create(u, {
       toolId: tool.id,
       clientId: randomUUID(),
-      payload: { summary: "A", tags: ["x"] },
+      payload: { summary: "A" },
     });
     const updated = await h.services.entries.update(u, entry.id, {
       payload: { uncertain: "Does it last?" },
       occurredAt: "2026-10-13T08:00:00+01:00",
     });
-    expect(updated.payload).toEqual({ summary: "A", tags: ["x"], uncertain: "Does it last?" });
+    expect(updated.payload).toEqual({ summary: "A", uncertain: "Does it last?" });
     expect(updated.occurredAt).toBe("2026-10-13T07:00:00.000Z");
     await expect(
       h.services.entries.update(u, entry.id, { payload: { difficulty: 9 } }),

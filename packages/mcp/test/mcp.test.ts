@@ -84,7 +84,6 @@ describe("tools", () => {
       payload: {
         summary: "Sent the proposal without a third rewrite",
         happened: "Client signed",
-        tags: ["work"],
       },
       occurredAt: "2026-10-13T09:00:00Z",
     });
@@ -110,7 +109,7 @@ describe("tools", () => {
     });
     expect(got.structuredContent?.["recentEntries"]).toHaveLength(1);
 
-    const entries = await call(client, "list_entries", { tag: "work" });
+    const entries = await call(client, "list_entries", { changeTargetId: target.id });
     expect(entries.structuredContent?.["items"]).toHaveLength(1);
 
     const progress = await call(client, "summarise_progress");

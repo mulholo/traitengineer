@@ -29,6 +29,13 @@
       "when": 1792010477690,
       "tag": "0003_push_tickets",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795211202277,
+      "tag": "0004_drop_entry_tags",
+      "breakpoints": true
     }
   ]
 }
