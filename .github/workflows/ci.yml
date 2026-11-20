@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Lets a GitHub merge queue run CI on its merge groups, if the repository ever uses one.
+  merge_group:
 
 concurrency:
   group: ci-${{ github.ref }}

@@ -1,0 +1,80 @@
+name: Auto-update PRs
+
+# A small merge queue for a user-owned repo (GitHub's own merge queue needs an organisation).
+# Branch protection requires PRs to be up to date with main, so after every merge the next PR has to take in main
+# and pass CI again. This does that step: among open PRs with auto-merge on, oldest first, it updates the first one
+# that is behind main, one at a time. When that PR's CI passes, auto-merge merges it, the push to main runs this
+# again, and the next PR is updated. A PR whose checks failed or that conflicts with main is skipped (fix it and it
+# rejoins). Updating every queued PR at once would rerun CI on all of them after each merge for no gain.
+#
+# Needs the AUTO_UPDATE_TOKEN secret (a fine-grained token for this repo with Contents, Pull requests and Workflows:
+# read and write, Checks: read). The default GITHUB_TOKEN can't be used: pushes made with it don't trigger CI,
+# so the updated PR would never get its checks.
+on:
+  push:
+    branches: [main]
+  # Safe with pull_request_target: no PR code is checked out or run; the job only calls the API.
+  pull_request_target:
+    types: [auto_merge_enabled, ready_for_review]
+  # A queued PR's CI finished: if it failed, move on to the next one.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: auto-update-prs
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          HAS_TOKEN: ${{ secrets.AUTO_UPDATE_TOKEN != '' }}
+        with:
+          github-token: ${{ secrets.AUTO_UPDATE_TOKEN || github.token }}
+          script: |
+            if (process.env.HAS_TOKEN !== 'true') {
+              core.warning('AUTO_UPDATE_TOKEN is not set, so PRs are not auto-updated (see the comment at the top of this workflow).');
+              return;
+            }
+            const { owner, repo } = context.repo;
+            const { data: repoInfo } = await github.rest.repos.get({ owner, repo });
+            const base = repoInfo.default_branch;
+            const open = await github.paginate(github.rest.pulls.list, {
+              owner, repo, state: 'open', base, sort: 'created', direction: 'asc', per_page: 100,
+            });
+            const queue = open.filter((pr) => pr.auto_merge && !pr.draft);
+            core.info(`Auto-merge queue: ${queue.map((pr) => `#${pr.number}`).join(', ') || 'empty'}`);
+
+            for (const pr of queue) {
+              const { data: cmp } = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo, basehead: `${base}...${pr.head.sha}`,
+              });
+              if (cmp.behind_by === 0) {
+                // Up to date: its CI is running or passed (auto-merge will merge it), unless something failed.
+                const runs = await github.paginate(github.rest.checks.listForRef, {
+                  owner, repo, ref: pr.head.sha, per_page: 100,
+                });
+                const failed = runs.filter((r) => ['failure', 'timed_out', 'action_required'].includes(r.conclusion));
+                if (failed.length === 0) {
+                  core.info(`#${pr.number} is up to date and its checks are running or passed; waiting for it to merge.`);
+                  return;
+                }
+                core.info(`#${pr.number} is up to date but ${failed.map((r) => r.name).join(', ')} failed; skipping it.`);
+                continue;
+              }
+              try {
+                await github.rest.pulls.updateBranch({ owner, repo, pull_number: pr.number, expected_head_sha: pr.head.sha });
+                core.notice(`Updated #${pr.number} with ${base} (${cmp.behind_by} commit(s) behind).`);
+                return;
+              } catch (error) {
+                core.warning(`Could not update #${pr.number} (${error.message}); it probably conflicts with ${base}. Skipping it.`);
+              }
+            }
+            core.info('Nothing to update.');
