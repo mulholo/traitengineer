@@ -8,7 +8,7 @@ name: Auto-update PRs
 # rejoins). Updating every queued PR at once would rerun CI on all of them after each merge for no gain.
 #
 # Needs the AUTO_UPDATE_TOKEN secret (a fine-grained token for this repo with Contents, Pull requests and Workflows:
-# read and write, Checks: read). The default GITHUB_TOKEN can't be used: pushes made with it don't trigger CI,
+# read and write; check runs are readable without a permission on a public repo). The default GITHUB_TOKEN can't be used: pushes made with it don't trigger CI,
 # so the updated PR would never get its checks.
 on:
   push:
@@ -74,7 +74,8 @@ jobs:
                 core.notice(`Updated #${pr.number} with ${base} (${cmp.behind_by} commit(s) behind).`);
                 return;
               } catch (error) {
-                core.warning(`Could not update #${pr.number} (${error.message}); it probably conflicts with ${base}. Skipping it.`);
+                const why = error.status === 422 ? `it probably conflicts with ${base}` : 'check AUTO_UPDATE_TOKEN\'s permissions';
+                core.warning(`Could not update #${pr.number} (${error.status}: ${error.message}); ${why}. Skipping it.`);
               }
             }
             core.info('Nothing to update.');
