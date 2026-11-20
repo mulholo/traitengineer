@@ -53,7 +53,6 @@ export async function seedDemo(
   const services = createServices({ repos: createRepositories(db), now: () => now });
   const { id: userId } = await insertUser(db, {
     email: DEMO_EMAIL,
-    displayName: "Demo",
     timezone: "Europe/London",
   });
   if (opts.passwordHash) {

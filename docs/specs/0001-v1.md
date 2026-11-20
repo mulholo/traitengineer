@@ -111,7 +111,7 @@ traitengineer/
 Four core tables plus support tables; tool-specific data lives in validated JSONB so new tool types need no migration.
 
 - **Conventions:** UUIDv7 primary keys generated in the app; `timestamptz` everywhere, stored UTC; `created_at` / `updated_at` on every table; soft delete via `deleted_at` where noted; every table has `user_id` with a foreign key and an index.
-- **`users`** (owned by Better Auth, extended): `email` (unique, stored lower-cased), `timezone` (IANA, default `Europe/London`), `display_name`. The password hash lives in Better Auth's `account` table for the user's credential account (see section 6); it is never returned by any API, MCP tool or log line.
+- **`users`** (owned by Better Auth, extended): `email` (unique, stored lower-cased), `timezone` (IANA, default `Europe/London`), `display_name` (required by Better Auth's user model; not used by the app, see ADR 0035). The password hash lives in Better Auth's `account` table for the user's credential account (see section 6); it is never returned by any API, MCP tool or log line.
 - **`change_targets`:** `title` (≤ 120 chars), `old_pattern` (text), `desired_default` (text), `why` (text), `status` (`active` | `paused` | `achieved` | `archived`), `sort_order`, `archived_at`.
 - **`tools`:** `change_target_id`, `type` (from the registry), `name`, `config` (JSONB, validated by the type's config schema), `sort_order`, `deleted_at`.
 - **`entries`:** `tool_id`, `change_target_id` (denormalised for querying), `tool_type`, `payload` (JSONB, validated by the type's payload schema), `occurred_at` (when it happened; defaults to now, user-editable), `source` (`mobile` | `web` | `mcp` | `api`), `client_id` (UUID from the client, unique per user, makes creates idempotent), `deleted_at`. Index on `(user_id, change_target_id, occurred_at desc)`.
@@ -148,7 +148,7 @@ A versioned REST API under `/v1`, defined with `@hono/zod-openapi` so `/openapi.
   - `GET|POST /v1/reminders`; `PATCH|DELETE /v1/reminders/:id`; `POST /v1/reminders/:id/test` sends one immediately.
   - `POST /v1/devices` (upsert by push token); `DELETE /v1/devices/:id`.
   - `GET|POST /v1/tokens` (personal access tokens); `DELETE /v1/tokens/:id`.
-  - `GET /v1/me`; `PATCH /v1/me` (timezone, display name).
+  - `GET /v1/me`; `PATCH /v1/me` (timezone).
 - **Rate limiting:** a simple in-memory per-user limit (e.g. 120 writes per minute) to catch runaway agents.
 - **Client generation:** `pnpm gen:client` builds `/openapi.json` from the app without a server and regenerates `packages/client`. CI fails if the generated output differs from what is committed.
 

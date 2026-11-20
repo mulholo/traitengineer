@@ -79,7 +79,6 @@ function NameCell({ name, folded }: { name: string; folded: string }) {
 function Account() {
   const { me } = useAuth();
   const updateMe = useUpdateMe();
-  const [name, setName] = useState(me?.displayName ?? "");
   const [tz, setTz] = useState(me?.timezone ?? "");
   const deviceTz = Localization.getCalendars()[0]?.timeZone ?? undefined;
   return (
@@ -88,7 +87,6 @@ function Account() {
         <Body>Signed in as {me?.email}</Body>
       </View>
       <Form>
-        <TextField label="Display name" value={name} onChangeText={setName} />
         <TextField
           label="Time zone (IANA)"
           autoCapitalize="none"
@@ -109,11 +107,7 @@ function Account() {
         ) : null}
         <ErrorText error={updateMe.error} />
         <View className="items-start">
-          <Button
-            label="Save"
-            busy={updateMe.isPending}
-            onPress={() => updateMe.mutate({ displayName: name, timezone: tz })}
-          />
+          <Button label="Save" busy={updateMe.isPending} onPress={() => updateMe.mutate({ timezone: tz })} />
         </View>
       </Form>
     </Section>
