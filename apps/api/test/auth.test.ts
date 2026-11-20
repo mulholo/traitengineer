@@ -1,4 +1,5 @@
-import { accounts } from "@te/db";
+import { accounts, sessions } from "@te/db";
+import { eq } from "drizzle-orm";
 import { createTestDb } from "@te/db";
 import { describe, expect, test } from "vitest";
 import { createContainerFromHandle } from "../src/container.ts";
@@ -125,6 +126,28 @@ describe("password change", () => {
     expect(ok.status).toBe(200);
     expect((await h.request("GET", "/v1/me", { token: b })).status).toBe(401);
     expect((await signIn(email, "a brand new password", "203.0.113.22")).status).toBe(200);
+  });
+});
+
+describe("session freshness", () => {
+  test("a session signed in over a day ago can still list sessions, but not register a passkey", async () => {
+    const email = await signUp();
+    const token = (await signIn(email, PASSWORD, "203.0.113.30")).body["token"] as string;
+    // Better Auth measures freshness from sign-in (`createdAt`) against the wall clock; default freshAge is 1 day.
+    await h.handle.db
+      .update(sessions)
+      .set({ createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) })
+      .where(eq(sessions.token, token));
+
+    const list = await h.json<{ token: string }[]>("GET", "/api/auth/list-sessions", { token });
+    expect(list.status).toBe(200);
+    expect(list.body.map((s) => s.token)).toContain(token);
+
+    const register = await h.json("GET", "/api/auth/passkey/generate-register-options", { token });
+    expect(register.status).toBe(403);
+    expect(register.body["code"]).toBe("SESSION_NOT_FRESH");
+
+    expect((await h.request("GET", "/api/auth/list-sessions")).status).toBe(401);
   });
 });
 
