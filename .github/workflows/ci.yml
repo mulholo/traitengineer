@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Lets a GitHub merge queue run CI on its merge groups, if the repository ever uses one.
+  merge_group:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,7 +14,10 @@ concurrency:
 env:
   TURBO_TELEMETRY_DISABLED: "1"
 
+# Three jobs in parallel; wall-clock time is the slowest of them. Job names are the status check names
+# (`check`, `e2e`, `docker`), so branch protection's required checks must list all three.
 jobs:
+  # `pnpm check` (typecheck, lint, format, boundaries, unit tests) and the generated-client drift check.
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -24,17 +29,48 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Turbo's local cache, carried between runs: a package's tests are skipped when neither it nor anything it
+      # depends on (the `transit` task in turbo.json) changed. Root tasks hash every file, so they always run.
+      - uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-check-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-check-${{ runner.os }}-
       - run: pnpm check
       - name: Generated client is up to date
         if: hashFiles('packages/client/openapi.json') != ''
         run: |
           pnpm gen:client
           git diff --exit-code -- packages/client
-      - name: Full check (build + e2e)
-        if: hashFiles('apps/mobile/playwright.config.ts') != ''
-        run: |
-          pnpm --filter @te/mobile exec playwright install --with-deps chromium
-          pnpm check:full
+      # Keep the carried-over cache from growing forever: drop entries not written in the last week.
+      - name: Prune Turbo cache
+        if: always()
+        run: find .turbo/cache -type f -mtime +7 -delete 2>/dev/null || true
+
+  # Web build + Playwright against the real API (the second half of `pnpm check:full`).
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-e2e-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-e2e-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: playwright-${{ runner.os }}-
+      - run: pnpm --filter @te/mobile exec playwright install --with-deps chromium
+      - run: pnpm turbo run e2e
       - name: Upload Playwright report
         if: always() && hashFiles('apps/mobile/playwright-report/**') != ''
         uses: actions/upload-artifact@v4
@@ -43,6 +79,10 @@ jobs:
           path: |
             apps/mobile/playwright-report
             apps/mobile/test-results
+      # Keep the carried-over cache from growing forever: drop entries not written in the last week.
+      - name: Prune Turbo cache
+        if: always()
+        run: find .turbo/cache -type f -mtime +7 -delete 2>/dev/null || true
 
   # Builds the production image and boots it (PGlite inside, no secrets) so Dockerfile breakage shows up on the PR.
   docker:
@@ -57,8 +97,10 @@ jobs:
           context: .
           load: true
           tags: traitengineer:ci
+          # PRs read the layer cache that main writes. Only main writes it: exporting took ~2 minutes per run, and
+          # PR-scoped caches are never read by other branches anyway.
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max' || '' }}
       - name: Release command (migrations) runs in the image
         run: docker run --rm -e PGLITE_DIR=/tmp/pglite traitengineer:ci node packages/db/src/cli/migrate.ts
       - name: Boot and smoke test

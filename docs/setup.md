@@ -20,8 +20,14 @@ values go into Fly secrets (`fly secrets set`), CI values into GitHub Actions se
 ### 1. GitHub repo (M0)
 
 1. Create the repo `traitengineer` and push this repo to it (`git remote add origin ... && git push -u origin main`).
-2. Repo settings for `traitengineer`: protect `main` (require the `CI / check` status), allow squash merge
-   only, install the Renovate GitHub app for this repo.
+2. Repo settings for `traitengineer`: protect `main` with a ruleset that requires the `check`, `e2e` and `docker`
+   status checks and branches to be up to date before merging; allow squash merge only; allow auto-merge; install
+   the Renovate GitHub app for this repo.
+3. Merging: turn on auto-merge for a PR instead of updating it from `main` by hand. The `Auto-update PRs`
+   workflow (`.github/workflows/auto-update.yml`) updates the oldest queued PR that is behind `main`, one at a
+   time, so each PR is tested against the latest `main` before it merges. It needs the `AUTO_UPDATE_TOKEN` secret:
+   a fine-grained personal access token for this repo only, with Contents, Pull requests and Workflows set to
+   read and write and Checks set to read.
 
 ### 2. Neon (M6)
 
@@ -95,6 +101,7 @@ Settings → Secrets and variables → Actions. The deploy workflow skips each p
 | `CI_PERSONAL_ACCESS_TOKEN`        | secret   | Smoke test `GET /v1/me` after deploy (a `read`-scoped TE token)                   |
 | `EXPO_TOKEN`                      | secret   | EAS update / build / submit                                                       |
 | `CLAUDE_CODE_OAUTH_TOKEN`         | secret   | Claude Code GitHub Action for issues labelled `agent`                             |
+| `AUTO_UPDATE_TOKEN`               | secret   | `auto-update.yml` updates queued auto-merge PRs from `main` (step 1.3)            |
 | `NEON_API_KEY`, `NEON_PROJECT_ID` | secret   | M8 preview branches                                                               |
 | `FLY_APP`                         | variable | Fly app name (default `traitengineer`); previews are `<FLY_APP>-pr-<n>`           |
 | `FLY_ORG`                         | variable | Fly org for preview apps (default `personal`)                                     |
