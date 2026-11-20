@@ -29,7 +29,6 @@ const summaries = [
   "Pushed the half-finished branch for early review",
   "Said no to an extra review cycle",
 ];
-const tags = ["work", "home", "writing", "meetings", "code"];
 
 export interface SeedResult {
   userId: string;
@@ -91,7 +90,6 @@ export async function seedDemo(
     const daysAgo = Math.floor(rand() * 56);
     const occurredAt = new Date(now.getTime() - daysAgo * 86_400_000 - Math.floor(rand() * 10) * 3_600_000);
     const summary = summaries[Math.floor(rand() * summaries.length)] ?? "Did the thing";
-    const tag = tags[Math.floor(rand() * tags.length)] ?? "work";
     await services.entries.create(userId, {
       toolId: tool.id,
       clientId: randomUUID(),
@@ -104,7 +102,6 @@ export async function seedDemo(
         supports: "Good enough beats perfect",
         ...(rand() > 0.5 ? { uncertain: "Whether this holds under real pressure" } : {}),
         ...(tool.config["askDifficulty"] ? { difficulty: 1 + Math.floor(rand() * 5) } : {}),
-        tags: [tag],
       },
     });
     entryCount++;

@@ -22,7 +22,7 @@ export const SERVER_INSTRUCTIONS = `Trait Engineer tracks psychological change t
 - A change target is a behaviour the user wants to shift: the old pattern, the desired default, and why it matters.
 - Each target has tools; v1 has one tool type, the evidence log. Each tool collects entries.
 - An evidence-log entry records a concrete moment: what the user did (summary), and optionally what they expected,
-  what happened, what it supports, what remains uncertain, difficulty (1–5) and tags.
+  what happened, what it supports, what remains uncertain and difficulty (1–5).
 
 Guidance:
 - Read before you write: call list_change_targets or get_change_target to find the right target and tool IDs.
@@ -143,14 +143,13 @@ export function createMcpServer(deps: { services: Services; principal: McpPrinci
     {
       title: "List entries",
       description:
-        "Entries newest first, optionally filtered by change target, tool, time range (ISO 8601) and tag. " +
+        "Entries newest first, optionally filtered by change target, tool, time range (ISO 8601). " +
         "Returns up to `limit` (default 50, max 200) plus `nextCursor` when there are more.",
       inputSchema: {
         changeTargetId: idSchema.optional(),
         toolId: idSchema.optional(),
         since: timestampSchema.optional(),
         until: timestampSchema.optional(),
-        tag: z.string().optional(),
         limit: z.number().int().min(1).max(200).optional(),
         cursor: z.string().optional(),
       },

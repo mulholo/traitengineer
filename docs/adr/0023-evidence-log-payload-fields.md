@@ -1,6 +1,6 @@
 # 0023. Evidence-log payload fields
 
-- Status: accepted
+- Status: accepted (the `tags` field is removed by 0035)
 - Date: 2026-10-14
 
 ## Context

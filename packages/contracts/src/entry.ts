@@ -47,6 +47,5 @@ export const listEntriesQuerySchema = pageQuerySchema.extend({
   toolId: idSchema.optional(),
   since: timestampSchema.optional(),
   until: timestampSchema.optional(),
-  tag: z.string().min(1).max(50).optional(),
 });
 export type ListEntriesQuery = z.input<typeof listEntriesQuerySchema>;

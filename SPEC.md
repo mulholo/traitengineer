@@ -124,7 +124,7 @@ Four core tables plus support tables; tool-specific data lives in validated JSON
   - Mobile has a matching map in `apps/mobile/src/tools/<type>/` with `QuickLogForm` and `EntryCard` components; a type-level test fails if a registry type has no UI.
 - **Evidence-log tool type (`evidence_log`):**
   - `config`: `prompt` (string shown on the quick-log form, default "What did you do?"), `askDifficulty` (boolean, default true).
-  - `payload`: `summary` (required, 1–280 chars), `details` (optional text), `difficulty` (optional integer 1–5), `tags` (string array, max 10).
+  - `payload`: `summary` (required, 1–280 chars), `details` (optional text), `difficulty` (optional integer 1–5). (Tags were removed after v1; see ADR 0035.)
   - `summarise`: count per ISO week, current streak in days (user time zone), days since last entry.
 - **Adding a tool type** (document this as a checklist in `AGENTS.md`): schema in contracts, registry entry, UI pair in mobile, MCP description update, tests at each layer. No migration.
 
@@ -144,7 +144,7 @@ A versioned REST API under `/v1`, defined with `@hono/zod-openapi` so `/openapi.
   - `GET|POST /v1/change-targets` (list filterable by `status`); `GET|PATCH|DELETE /v1/change-targets/:id`.
   - `GET /v1/change-targets/:id/summary` returns tool summaries from the registry plus totals.
   - `GET|POST /v1/tools` (filter by `changeTargetId`); `GET|PATCH|DELETE /v1/tools/:id`.
-  - `GET /v1/entries` with filters `changeTargetId`, `toolId`, `since`, `until`, `tag`; `POST /v1/entries` (idempotent on `clientId`: a repeat returns the existing entry with 200); `GET|PATCH|DELETE /v1/entries/:id`.
+  - `GET /v1/entries` with filters `changeTargetId`, `toolId`, `since`, `until`; `POST /v1/entries` (idempotent on `clientId`: a repeat returns the existing entry with 200); `GET|PATCH|DELETE /v1/entries/:id`.
   - `GET|POST /v1/reminders`; `PATCH|DELETE /v1/reminders/:id`; `POST /v1/reminders/:id/test` sends one immediately.
   - `POST /v1/devices` (upsert by push token); `DELETE /v1/devices/:id`.
   - `GET|POST /v1/tokens` (personal access tokens); `DELETE /v1/tokens/:id`.
@@ -191,7 +191,7 @@ A remote MCP server at `/mcp` over Streamable HTTP, defined in `packages/mcp` an
 - **Read tools:**
   - `list_change_targets(status?)`: targets with tool list and last-entry date.
   - `get_change_target(id)`: full target, its tools, summary, and the 20 most recent entries.
-  - `list_entries(changeTargetId?, toolId?, since?, until?, tag?, limit?)`.
+  - `list_entries(changeTargetId?, toolId?, since?, until?, limit?)`.
   - `summarise_progress(changeTargetId?, since?)`: per-target weekly counts, streaks, days since last entry, and the user's own words from recent entries. Default is all active targets over the last 28 days.
 - **Write tools:**
   - `log_entry(toolId, payload, occurredAt?)`: sets `source=mcp` and generates `clientId` server-side.

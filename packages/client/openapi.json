@@ -2383,16 +2383,6 @@
             "required": false,
             "name": "until",
             "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 50
-            },
-            "required": false,
-            "name": "tag",
-            "in": "query"
           }
         ],
         "responses": {

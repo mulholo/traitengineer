@@ -18,7 +18,7 @@ import { CREATE_ENTRY, createQueryClient, type CreateEntryInput } from "./client
 const input: CreateEntryInput = {
   toolId: "01927a4e-6f0b-7160-bcce-23cb1342b381",
   clientId: "01927a4e-6f0b-7160-bcce-23cb1342b399",
-  payload: { summary: "Logged on the train", tags: [] },
+  payload: { summary: "Logged on the train" },
   source: "mobile",
 };
 

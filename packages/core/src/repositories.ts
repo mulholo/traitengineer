@@ -81,7 +81,6 @@ export interface EntryFilter {
   toolId?: string;
   since?: string;
   until?: string;
-  tag?: string;
 }
 
 export interface EntryRepository {
