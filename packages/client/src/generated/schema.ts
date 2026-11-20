@@ -1150,90 +1150,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/v1/export": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Export everything (JSON or Markdown) */
-        get: {
-            parameters: {
-                query?: {
-                    format?: "json" | "markdown";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Export */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Export"];
-                        "text/markdown": string;
-                    };
-                };
-                /** @description Validation failed */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["Problem"];
-                    };
-                };
-                /** @description Not authenticated */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["Problem"];
-                    };
-                };
-                /** @description Insufficient scope */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["Problem"];
-                    };
-                };
-                /** @description Not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["Problem"];
-                    };
-                };
-                /** @description Rate limited */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["Problem"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -2682,25 +2598,6 @@ export interface components {
                 week: string;
             }[];
         };
-        /** @description Everything for the user. Never includes credentials or the email. */
-        Export: {
-            changeTargets: components["schemas"]["ChangeTarget"][];
-            entries: components["schemas"]["Entry"][];
-            /**
-             * Format: date-time
-             * @example 2026-10-14T08:30:00.000Z
-             */
-            exportedAt: string;
-            reminders: components["schemas"]["Reminder"][];
-            tools: components["schemas"]["Tool"][];
-            user: {
-                displayName: string;
-                id: string;
-                timezone: string;
-            };
-            /** @enum {number} */
-            version: 1;
-        };
         Health: {
             /** @enum {string} */
             db: "ok" | "error";
@@ -2952,7 +2849,6 @@ export type SchemaCreateTool = components['schemas']['CreateTool'];
 export type SchemaDevice = components['schemas']['Device'];
 export type SchemaEntry = components['schemas']['Entry'];
 export type SchemaEvidenceLogSummary = components['schemas']['EvidenceLogSummary'];
-export type SchemaExport = components['schemas']['Export'];
 export type SchemaHealth = components['schemas']['Health'];
 export type SchemaMe = components['schemas']['Me'];
 export type SchemaPersonalAccessToken = components['schemas']['PersonalAccessToken'];

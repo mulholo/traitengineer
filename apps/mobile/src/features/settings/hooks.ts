@@ -93,9 +93,3 @@ export function useDeletePasskey() {
     onSuccess: () => void qc.invalidateQueries({ queryKey: keys.passkeys }),
   });
 }
-
-export async function fetchExport(format: "json" | "markdown"): Promise<string> {
-  const res = await api.GET("/v1/export", { params: { query: { format } }, parseAs: "text" });
-  if (!res.response.ok || typeof res.data !== "string") throw new Error("Export failed");
-  return res.data;
-}

@@ -3,7 +3,6 @@ import type { Repositories } from "../repositories.ts";
 import { createChangeTargetService } from "./change-targets.ts";
 import { createDeviceService } from "./devices.ts";
 import { createEntryService } from "./entries.ts";
-import { createExportService } from "./export.ts";
 import { createLoginThrottle, type LoginThrottleOptions } from "./login-throttle.ts";
 import { createNotificationService } from "./notifications.ts";
 import { createReminderService } from "./reminders.ts";
@@ -34,7 +33,6 @@ export function createServices(opts: CreateServicesOptions) {
     reminders: createReminderService(deps, push),
     devices: createDeviceService(deps),
     tokens: createTokenService(deps),
-    exports: createExportService(deps),
     loginThrottle: createLoginThrottle(deps, opts.loginThrottle),
     notifications: createNotificationService(deps, push),
   };

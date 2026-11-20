@@ -1,6 +1,6 @@
 # 0033. Remove the nightly GitHub archive
 
-- Status: accepted (supersedes the archive half of 0032)
+- Status: accepted (supersedes the archive half of 0032); export and restore later removed by 0034
 - Date: 2026-10-17
 
 ## Context
