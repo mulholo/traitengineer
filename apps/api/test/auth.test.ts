@@ -129,7 +129,7 @@ describe("password change", () => {
 });
 
 describe("the password hash never leaves the server", () => {
-  test("not in sign-in, session, /v1/me, or export responses", async () => {
+  test("not in sign-in, session, or /v1/me responses", async () => {
     const email = await signUp();
     const [account] = await h.handle.db.select({ password: accounts.password }).from(accounts);
     const hashes = (await h.handle.db.select({ password: accounts.password }).from(accounts))
@@ -142,8 +142,6 @@ describe("the password hash never leaves the server", () => {
       signedIn.text,
       await (await h.request("GET", "/api/auth/get-session", { token })).text(),
       await (await h.request("GET", "/v1/me", { token })).text(),
-      await (await h.request("GET", "/v1/export", { token })).text(),
-      await (await h.request("GET", "/v1/export?format=markdown", { token })).text(),
     ];
     for (const body of bodies) {
       for (const hash of hashes) expect(body).not.toContain(hash);

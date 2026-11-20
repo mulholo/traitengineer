@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { renderExportMarkdown } from "@te/core";
 import { randomUUID } from "node:crypto";
 import { useHarness } from "./harness.ts";
 
@@ -162,35 +161,5 @@ describe("login throttle", () => {
     await throttle.recordSuccess(keys);
     for (let i = 0; i < 4; i++) await throttle.recordFailure(keys);
     expect(await throttle.retryAfter(keys)).toBe(0);
-  });
-});
-
-describe("export", () => {
-  test("includes targets, tools, entries and reminders but no email or secrets; renders markdown", async () => {
-    const u = await h.newUser({ timezone: "Europe/London" });
-    const t = await h.services.changeTargets.create(u, { title: "Default to action", why: "Momentum" });
-    const tool = await h.services.tools.create(u, { changeTargetId: t.id, type: "evidence_log" });
-    await h.services.entries.create(u, {
-      toolId: tool.id,
-      clientId: randomUUID(),
-      occurredAt: "2026-10-13T23:30:00Z",
-      payload: { summary: "Shipped it", happened: "Fine", difficulty: 2, tags: ["work"] },
-    });
-    await h.services.reminders.create(u, { schedule: { type: "daily", time: "08:00" } });
-    await h.services.tokens.create(u, { name: "x", scope: "read" });
-
-    const data = await h.services.exports.exportAll(u);
-    expect(data.changeTargets).toHaveLength(1);
-    expect(data.tools).toHaveLength(1);
-    expect(data.entries).toHaveLength(1);
-    expect(data.reminders).toHaveLength(1);
-    const json = JSON.stringify(data);
-    expect(json).not.toContain("@example.test");
-    expect(json).not.toContain("te_pat_");
-
-    const md = renderExportMarkdown(data);
-    expect(md).toContain("## Default to action");
-    expect(md).toContain("- 2026-10-14 — Shipped it"); // local date in London
-    expect(md).toContain("**Difficulty:** 2/5");
   });
 });

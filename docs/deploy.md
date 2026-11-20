@@ -74,12 +74,6 @@ machine must always be running for reminders to fire.
   and `reminders dispatched` in the logs.
 - **Database restore (provider-level):** Neon point-in-time restore (branch from a timestamp, then point
   `DATABASE_URL*` at it).
-- **Restore from an export (provider-independent):** take an export with `GET /v1/export` or Settings →
-  Export (JSON). To rebuild anywhere: deploy, create the owner (`user:create-owner`), then
-  `fly ssh console -C "node /app/apps/api/src/cli/restore.ts /tmp/traitengineer.json"` after copying the JSON in
-  (`fly ssh sftp shell`), or locally `OWNER_EMAIL=… DATABASE_URL_DIRECT=… pnpm db:restore traitengineer.json`.
-  Restores keep IDs and timestamps and are idempotent. The round trip (export → restore → export) runs in CI
-  (`packages/db/test/restore.test.ts`).
 
 ## Local production-like run
 
