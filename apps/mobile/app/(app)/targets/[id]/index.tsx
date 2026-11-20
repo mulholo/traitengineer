@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { useEntries } from "../../../../src/features/entries/hooks";
+import { STATUS_LABEL } from "../../../../src/features/targets/format";
 import {
   useArchiveTarget,
   useTarget,
@@ -9,8 +10,14 @@ import {
 } from "../../../../src/features/targets/hooks";
 import { WeeklyChart } from "../../../../src/features/targets/WeeklyChart";
 import { uiFor } from "../../../../src/tools";
-import { Body, Button, Caption, Card, ErrorText, Heading, Loading, Screen } from "../../../../src/ui";
+import { EntryHead } from "../../../../src/tools/evidence_log/EntryCard";
+import { BackLink } from "../../../../src/ui/BackLink";
+import { Button, ErrorText, Heading, Loading, Screen, SpecList, TableNote } from "../../../../src/ui";
 
+/**
+ * One target: its title, status and spec sheet, a quiet row of actions, the last 12 weeks as a bar chart and
+ * the timeline of entries, each section under a grey band.
+ */
 export default function TargetDetail() {
   const { id = "" } = useLocalSearchParams<{ id: string }>();
   const target = useTarget(id);
@@ -23,6 +30,7 @@ export default function TargetDetail() {
   if (!target.data)
     return (
       <Screen>
+        <BackLink label="Targets" fallback="/targets" />
         <ErrorText error={target.error ?? new Error("Not found")} />
       </Screen>
     );
@@ -32,77 +40,70 @@ export default function TargetDetail() {
 
   return (
     <Screen testID="screen-target-detail">
-      <Button
-        label="‹ Targets"
-        variant="ghost"
-        compact
-        onPress={() => (router.canGoBack() ? router.back() : router.replace("/targets"))}
+      <View>
+        <BackLink label="Targets" fallback="/targets" />
+        <Heading>{t.title}</Heading>
+        <Text className="text-caption text-dim">{STATUS_LABEL[t.status]}</Text>
+      </View>
+      <SpecList
+        rows={[
+          { label: "Old pattern", value: t.oldPattern },
+          { label: "Desired default", value: t.desiredDefault },
+          { label: "Why", value: t.why },
+        ]}
       />
-      <Heading>{t.title}</Heading>
-      <Caption>{t.status}</Caption>
-      <Card>
-        {t.oldPattern ? (
-          <Body>
-            <Body className="font-semibold">Old pattern: </Body>
-            {t.oldPattern}
-          </Body>
-        ) : null}
-        {t.desiredDefault ? (
-          <Body>
-            <Body className="font-semibold">Desired default: </Body>
-            {t.desiredDefault}
-          </Body>
-        ) : null}
-        {t.why ? (
-          <Body>
-            <Body className="font-semibold">Why: </Body>
-            {t.why}
-          </Body>
-        ) : null}
-      </Card>
       <View className="flex-row flex-wrap gap-2">
         {(tools.data?.items ?? []).map((tool) => (
           <Button
             key={tool.id}
+            compact
             label={tool.name === "Evidence log" ? "Log evidence" : `Log: ${tool.name}`}
             onPress={() => router.push(`/log/${tool.id}`)}
           />
         ))}
-        <Button label="Edit" variant="secondary" onPress={() => router.push(`/targets/${id}/edit`)} />
+        <Button label="Edit" variant="secondary" compact onPress={() => router.push(`/targets/${id}/edit`)} />
         {t.status !== "archived" ? (
           <Button
             label="Archive"
             variant="danger"
+            compact
             busy={archive.isPending}
             onPress={() => archive.mutate()}
           />
         ) : null}
       </View>
-      <Heading level={2}>Last 12 weeks</Heading>
-      {firstTool ? (
-        <Card>
-          <WeeklyChart weeks={firstTool.summary.weeklyCounts} />
-          <Caption>
-            {summary.data?.totals.entries ?? 0} entries · current streak {firstTool.summary.currentStreakDays}{" "}
-            days
-          </Caption>
-        </Card>
-      ) : (
-        <Body muted>No tools yet.</Body>
-      )}
-      <Heading level={2}>Timeline</Heading>
-      {entries.data?.items.length === 0 ? <Body muted>No entries yet.</Body> : null}
-      {entries.data?.items.map((entry) => {
-        const ui = uiFor(entry.toolType);
-        return ui ? (
-          <ui.EntryCard
-            key={entry.id}
-            entry={entry}
-            toolName={toolName.get(entry.toolId)}
-            onPress={() => router.push(`/entries/${entry.id}`)}
-          />
-        ) : null;
-      })}
+      <View>
+        <Heading level={2}>Last 12 weeks</Heading>
+        {firstTool ? (
+          <View className="gap-2 border-b border-rule px-2 pb-3 pt-2">
+            <WeeklyChart weeks={firstTool.summary.weeklyCounts} />
+            <Text className="text-caption tabular-nums text-dim">
+              {summary.data?.totals.entries ?? 0} entries · current streak{" "}
+              {firstTool.summary.currentStreakDays} days
+            </Text>
+          </View>
+        ) : (
+          <TableNote>No tools yet.</TableNote>
+        )}
+      </View>
+      <View>
+        <Heading level={2}>Timeline</Heading>
+        <EntryHead />
+        {entries.isPending ? <TableNote>Loading…</TableNote> : null}
+        <ErrorText error={entries.error} />
+        {entries.data?.items.length === 0 ? <TableNote>No entries yet.</TableNote> : null}
+        {entries.data?.items.map((entry) => {
+          const ui = uiFor(entry.toolType);
+          return ui ? (
+            <ui.EntryCard
+              key={entry.id}
+              entry={entry}
+              toolName={toolName.get(entry.toolId)}
+              onPress={() => router.push(`/entries/${entry.id}`)}
+            />
+          ) : null;
+        })}
+      </View>
     </Screen>
   );
 }

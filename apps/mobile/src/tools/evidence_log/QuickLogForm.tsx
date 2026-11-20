@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { evidenceLogConfigSchema, evidenceLogPayloadSchema } from "@te/contracts";
 import { Controller, useForm } from "react-hook-form";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { z } from "zod";
 import { Button, Segmented, TextField } from "../../ui";
 import type { QuickLogFormProps } from "../types";
@@ -60,8 +60,9 @@ function fromPayload(p: Record<string, unknown> | undefined): FormValues {
 }
 
 /**
- * Evidence-log quick-log form. The first field (what I did) is autofocused; the Save button sits below the
- * scrolling fields so it is always reachable without scrolling.
+ * Evidence-log quick-log form, as a plain column of fields (the page scrolls). The first field (what I did) is
+ * autofocused and Save sits straight under it, so a quick log is type-then-save with Save on screen above a
+ * phone keyboard; the optional reflections, difficulty and tags follow.
  */
 export function QuickLogForm({
   tool,
@@ -79,31 +80,30 @@ export function QuickLogForm({
   const submit = handleSubmit((values) => onSubmit(toPayload(values)));
 
   return (
-    <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-4 pb-4"
-        keyboardShouldPersistTaps="handled"
-      >
-        <Controller
-          control={control}
-          name="summary"
-          render={({ field }) => (
-            <TextField
-              label={config.prompt}
-              // The spec requires the first field to be focused so logging takes three taps or fewer.
-              // oxlint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-              maxLength={280}
-              returnKeyType="done"
-              testID="field-summary"
-              error={formState.errors.summary ? "Say what you did (1–280 characters)" : undefined}
-            />
-          )}
-        />
+    <View className="gap-4">
+      <Controller
+        control={control}
+        name="summary"
+        render={({ field }) => (
+          <TextField
+            label={config.prompt}
+            // The spec requires the first field to be focused so logging takes three taps or fewer.
+            // oxlint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            maxLength={280}
+            returnKeyType="done"
+            testID="field-summary"
+            error={formState.errors.summary ? "Say what you did (1–280 characters)" : undefined}
+          />
+        )}
+      />
+      <View className="flex-row">
+        <Button label={submitLabel} busy={busy} onPress={() => void submit()} testID="save-entry" />
+      </View>
+      <View className="gap-4 border-t border-rule pt-4">
         {REFLECTIONS.map(({ name, label }) => (
           <Controller
             key={name}
@@ -149,10 +149,7 @@ export function QuickLogForm({
             />
           )}
         />
-      </ScrollView>
-      <View className="border-t border-border bg-bg pt-3">
-        <Button label={submitLabel} busy={busy} onPress={() => void submit()} testID="save-entry" />
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

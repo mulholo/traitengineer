@@ -16,6 +16,7 @@ const STATUSES = [
   { value: "achieved", label: "Achieved" },
 ] as const;
 
+/** Labelled fields stacked, status as a line of choices, the submit button left-aligned under a rule. */
 export function TargetForm(props: {
   initial?: ChangeTarget | undefined;
   submitLabel: string;
@@ -68,12 +69,14 @@ export function TargetForm(props: {
           <Segmented label="Status" value={f.value} options={STATUSES} onChange={f.onChange} />
         )}
       />
-      <Button
-        label={props.submitLabel}
-        busy={props.busy}
-        onPress={() => void handleSubmit(props.onSubmit)()}
-        testID="save-target"
-      />
+      <View className="flex-row border-t border-rule pt-4">
+        <Button
+          label={props.submitLabel}
+          busy={props.busy}
+          onPress={() => void handleSubmit(props.onSubmit)()}
+          testID="save-target"
+        />
+      </View>
     </View>
   );
 }

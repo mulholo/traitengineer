@@ -1,10 +1,20 @@
 import { Link, router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
-import { useAuth } from "../../src/auth/session";
 import { startOfToday, useEntries } from "../../src/features/entries/hooks";
-import { useTargets, useTools, type Tool } from "../../src/features/targets/hooks";
+import { useTargets, useTools, type ChangeTarget, type Tool } from "../../src/features/targets/hooks";
 import { uiFor } from "../../src/tools";
-import { Body, Button, Caption, Card, Empty, ErrorText, Heading, Loading, Screen } from "../../src/ui";
+import { EntryHead } from "../../src/tools/evidence_log/EntryCard";
+import {
+  Button,
+  ColumnHead,
+  ErrorText,
+  Heading,
+  Loading,
+  Screen,
+  TableAction,
+  TableHead,
+  TableNote,
+} from "../../src/ui";
 
 /** "Log evidence" for the default evidence log; "Log: <name>" for renamed or other tools. */
 function logLabel(tool: Tool): string {
@@ -17,9 +27,20 @@ function daysSince(iso: string | null | undefined): string {
   return days <= 0 ? "Logged today" : days === 1 ? "1 day since last entry" : `${days} days since last entry`;
 }
 
-/** Today: active targets with one-tap Log buttons, days since last entry, and today's entries. */
+/**
+ * Column widths, shared by the head and every row. Below md the last-entry text folds under the target, so a
+ * phone has two columns: the target and its Log buttons.
+ */
+const COL = {
+  main: "flex-1 md:flex-row md:gap-3",
+  target: "md:flex-[3]",
+  since: "md:w-48",
+  log: "items-end",
+};
+const ROW_GAP = "gap-2 md:gap-3";
+
+/** Today: active targets with one-tap Log buttons and days since last entry, then today's entries. */
 export default function Today() {
-  const { me } = useAuth();
   const targets = useTargets("active");
   const tools = useTools();
   const today = useEntries({ since: startOfToday() }, 100);
@@ -33,57 +54,96 @@ export default function Today() {
   for (const e of recent.data?.items ?? [])
     if (!lastByTarget.has(e.changeTargetId)) lastByTarget.set(e.changeTargetId, e.occurredAt);
   const toolName = new Map((tools.data?.items ?? []).map((t) => [t.id, t.name]));
+  const active = targets.data?.items ?? [];
 
   return (
     <Screen testID="screen-today">
-      <Heading>Today</Heading>
-      {me?.displayName ? <Body muted>Hi {me.displayName}. What did you do differently?</Body> : null}
+      <Heading hidden>Today</Heading>
       <ErrorText error={targets.error} />
-      {targets.data?.items.length === 0 ? (
-        <Empty title="No active change targets">
-          <Button label="Create your first target" onPress={() => router.push("/targets/new")} />
-        </Empty>
-      ) : null}
-      {targets.data?.items.map((target) => (
-        <Card key={target.id} testID="target-card">
-          <Link href={`/targets/${target.id}`} asChild>
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel={target.title}
-              className="min-h-tap justify-center"
-            >
-              <Text className="text-title font-semibold text-text">{target.title}</Text>
-            </Pressable>
-          </Link>
-          {target.desiredDefault ? <Body muted>{target.desiredDefault}</Body> : null}
-          <Caption>{daysSince(lastByTarget.get(target.id))}</Caption>
-          <View className="flex-row flex-wrap gap-2">
-            {(toolsByTarget.get(target.id) ?? []).map((tool) => (
-              <Button
-                key={tool.id}
-                compact
-                label={logLabel(tool)}
-                accessibilityLabel={`Log ${tool.name} for ${target.title}`}
-                onPress={() => router.push(`/log/${tool.id}`)}
-                testID="log-button"
-              />
-            ))}
+      <View>
+        <TableHead className={ROW_GAP}>
+          <View className={COL.main}>
+            <ColumnHead className={COL.target}>Target</ColumnHead>
+            <ColumnHead className={`hidden md:flex ${COL.since}`}>Last entry</ColumnHead>
           </View>
-        </Card>
-      ))}
-      <Heading level={2}>Today's entries</Heading>
-      {today.data?.items.length === 0 ? <Body muted>Nothing logged yet today.</Body> : null}
-      {today.data?.items.map((entry) => {
-        const ui = uiFor(entry.toolType);
-        return ui ? (
-          <ui.EntryCard
-            key={entry.id}
-            entry={entry}
-            toolName={toolName.get(entry.toolId)}
-            onPress={() => router.push(`/entries/${entry.id}`)}
+          <ColumnHead className={COL.log}>Log</ColumnHead>
+        </TableHead>
+        {targets.data && active.length === 0 ? (
+          <>
+            <TableNote>No active change targets.</TableNote>
+            <TableAction label="Create your first target" onPress={() => router.push("/targets/new")} />
+          </>
+        ) : null}
+        {active.map((target) => (
+          <TargetRow
+            key={target.id}
+            target={target}
+            tools={toolsByTarget.get(target.id) ?? []}
+            since={daysSince(lastByTarget.get(target.id))}
           />
-        ) : null;
-      })}
+        ))}
+      </View>
+      <View>
+        <Heading level={2}>Today's entries</Heading>
+        <EntryHead />
+        {today.data?.items.length === 0 ? <TableNote>Nothing logged yet today.</TableNote> : null}
+        {today.data?.items.map((entry) => {
+          const ui = uiFor(entry.toolType);
+          return ui ? (
+            <ui.EntryCard
+              key={entry.id}
+              entry={entry}
+              toolName={toolName.get(entry.toolId)}
+              onPress={() => router.push(`/entries/${entry.id}`)}
+            />
+          ) : null;
+        })}
+      </View>
     </Screen>
+  );
+}
+
+/**
+ * One active target. The row holds Log buttons, so it can't be one link: the target cell (title and desired
+ * default) is the link, the buttons sit in the right-hand column.
+ */
+function TargetRow({ target, tools, since }: { target: ChangeTarget; tools: Tool[]; since: string }) {
+  return (
+    <View testID="target-card" className={`flex-row items-start border-b border-rule px-2 py-1 ${ROW_GAP}`}>
+      <View className={COL.main}>
+        <Link href={`/targets/${target.id}`} asChild>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={target.title}
+            className={`min-h-tap justify-center hover:bg-mark active:bg-mark ${COL.target}`}
+          >
+            <Text className="text-caption text-link" numberOfLines={2}>
+              {target.title}
+            </Text>
+            {target.desiredDefault ? (
+              <Text className="text-caption text-dim" numberOfLines={1}>
+                {target.desiredDefault}
+              </Text>
+            ) : null}
+          </Pressable>
+        </Link>
+        <View className={`md:min-h-tap md:justify-center ${COL.since}`}>
+          <Text className="text-caption tabular-nums text-dim">{since}</Text>
+        </View>
+      </View>
+      <View className={`gap-1 ${COL.log}`}>
+        {tools.map((tool) => (
+          <Button
+            key={tool.id}
+            compact
+            variant="secondary"
+            label={logLabel(tool)}
+            accessibilityLabel={`Log ${tool.name} for ${target.title}`}
+            onPress={() => router.push(`/log/${tool.id}`)}
+            testID="log-button"
+          />
+        ))}
+      </View>
+    </View>
   );
 }

@@ -12,6 +12,18 @@
   --color-on-primary: 255 255 255;
   --color-danger: 200 40 40;
   --color-success: 22 130 70;
+
+  /* "Catalog" language, light: a printed parts catalog. White paper, near-black ink, hairline rules, grey group
+     bands, blue links, a yellow marker for the selected filter and the row under the pointer. */
+  --color-paper: 255 255 255;
+  --color-ink: 26 26 26;
+  --color-dim: 96 96 96;
+  --color-rule: 214 214 214;
+  --color-rule-strong: 96 96 96;
+  --color-band: 238 238 238;
+  --color-link: 22 86 172;
+  --color-mark: 255 246 170;
+  --color-alert: 176 0 32;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,5 +37,17 @@
     --color-on-primary: 10 10 12;
     --color-danger: 248 113 113;
     --color-success: 74 200 120;
+
+    /* "Catalog" language, dark: an amber terminal. Black screen, amber text, cyan links, a blue bar for the
+       selected filter and the row under the pointer. */
+    --color-paper: 0 0 0;
+    --color-ink: 255 196 0;
+    --color-dim: 196 140 0;
+    --color-rule: 64 46 0;
+    --color-rule-strong: 196 140 0;
+    --color-band: 30 22 0;
+    --color-link: 0 229 255;
+    --color-mark: 0 0 170;
+    --color-alert: 255 96 96;
   }
 }

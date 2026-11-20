@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Redirect } from "expo-router";
 import { useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { authFetch } from "../src/api/client";
 import { currentOAuthQuery, goTo } from "../src/auth/oauth";
 import { useAuth } from "../src/auth/session";
-import { Body, Button, Card, ErrorText, Heading, Loading, Screen } from "../src/ui";
+import { Body, Button, ErrorText, Heading, Loading, Masthead, Screen } from "../src/ui";
 
 const SCOPE_TEXT: Record<string, string> = {
   read: "Read your change targets, tools, entries and summaries",
@@ -38,7 +38,8 @@ export default function Consent() {
   if (status === "signedOut") return <Redirect href="/sign-in" />;
   if (!oauthQuery) {
     return (
-      <Screen testID="screen-consent">
+      <Screen narrow testID="screen-consent">
+        <Masthead />
         <Heading>Nothing to approve</Heading>
         <Body muted>This page is used when an AI assistant asks to connect to your account.</Body>
       </Screen>
@@ -63,14 +64,19 @@ export default function Consent() {
 
   const name = client.data?.client_name ?? client.data?.name ?? "An application";
   return (
-    <Screen testID="screen-consent">
-      <Heading>Connect {name}?</Heading>
-      <Body muted>{name} is asking for access to your Trait Engineer account. It will be able to:</Body>
-      <Card>
+    <Screen narrow testID="screen-consent">
+      <Masthead />
+      <View className="gap-1">
+        <Heading>Connect {name}?</Heading>
+        <Body muted>{name} is asking for access to your account. It will be able to:</Body>
+      </View>
+      <View className="border-t border-rule">
         {scopes.map((s) => (
-          <Body key={s}>• {SCOPE_TEXT[s] ?? s}</Body>
+          <View key={s} className="border-b border-rule px-2 py-2">
+            <Text className="text-caption text-ink">{SCOPE_TEXT[s] ?? s}</Text>
+          </View>
         ))}
-      </Card>
+      </View>
       {scopes.includes("write") ? (
         <Body muted>
           Write access lets it log entries as you. You can revoke access by signing out other sessions in
@@ -78,7 +84,7 @@ export default function Consent() {
         </Body>
       ) : null}
       <ErrorText error={error} />
-      <View className="gap-2">
+      <View className="flex-row flex-wrap items-center gap-3">
         <Button label="Allow" onPress={() => void decide(true)} busy={busy} testID="consent-allow" />
         <Button label="Deny" variant="secondary" onPress={() => void decide(false)} disabled={busy} />
       </View>

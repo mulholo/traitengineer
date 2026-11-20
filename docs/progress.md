@@ -178,3 +178,16 @@ Milestone log: date, milestone, what shipped, anything deferred.
 - **Kept:** `GET /v1/export` + share sheet, `pnpm db:restore`, and the restore round-trip test in CI.
 - **Tests:** a worker test seeds the old schedule and queue and checks that starting the worker removes them.
 - **Decisions:** ADR 0033 (supersedes the archive part of 0032).
+
+## 2026-11-20 — Catalog design language (web + native)
+
+- **Design:** every screen moved from cards to the "catalog" language: ruled tables, grey section bands, system
+  font, no radii or pills. Light mode is a printed parts catalog (blue links, yellow highlighter); dark mode an
+  amber terminal (cyan links, blue bar). Rules and table primitives in `apps/mobile/src/ui/catalog.tsx`, shared
+  controls in `src/ui/index.tsx`, tokens in `global.css`.
+- **/targets** is one table for all statuses with per-target numbers (entries, 12-week bars, streak, last entry)
+  from each target's summary, status bands only under "All", and "+ New target" as the table's last row.
+- **Fix:** `darkMode: "class"` in the Tailwind config. With "media", NativeWind's web runtime threw "Cannot
+  manually set color scheme" in the dev server. Dark mode still follows the system through the CSS variables.
+- **Tests:** unit tests for the /targets helpers (`format.test.ts`); all e2e pass, and the docs screenshots are
+  regenerated.

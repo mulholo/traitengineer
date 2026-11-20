@@ -19,7 +19,7 @@ export default function AppLayout() {
   if (status === "signedOut") return <Redirect href="/sign-in" />;
   if (askFirst) return <Redirect href="/notifications" />;
   return (
-    <View className="flex-1 bg-bg">
+    <View className="flex-1 bg-paper">
       <SyncBanner />
       <Tabs
         tabBar={renderNavBar}

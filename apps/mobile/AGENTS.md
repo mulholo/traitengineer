@@ -28,8 +28,10 @@ output) is served by `@te/api` from the same origin, so web uses the session coo
 - **Platform code:** `*.native.ts` / `*.ts` (web) pairs in `src/platform/` and `src/auth/passkey*`.
 - **Tools:** `src/tools/<type>/{QuickLogForm,EntryCard}.tsx`, registered in `src/tools/index.ts` as a complete
   `Record<ToolType, ToolUi>` (typecheck fails if a registry type has no UI).
-- **Design:** NativeWind; tokens (colours as CSS variables with light/dark, spacing `tap`=44px, radius, type
-  scale) in `tailwind.config.js` + `global.css`. Every control ≥44pt with an accessibility label (an e2e test
+- **Design:** the "catalog" language — ruled tables, no cards/radii/pills, system font; light = printed parts
+  catalog, dark = amber terminal. Rules and table primitives in `src/ui/catalog.tsx`; shared controls in
+  `src/ui/index.tsx`; colour tokens (`paper`, `ink`, `dim`, `rule`, `rule-strong`, `band`, `link`, `mark`,
+  `alert`) in `global.css` + `tailwind.config.js`. Every control ≥44pt with an accessibility label (an e2e test
   measures it). Every screen must render on web.
 - **Commands:** `pnpm --filter @te/mobile web` (dev; set `EXPO_PUBLIC_API_URL=http://localhost:3000`),
   `pnpm --filter @te/mobile build` (web export to `dist/web`), `pnpm --filter @te/mobile test` (jest-expo),

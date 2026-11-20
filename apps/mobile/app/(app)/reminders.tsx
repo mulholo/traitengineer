@@ -1,6 +1,6 @@
 import { reminderScheduleSchema } from "@te/contracts";
 import { useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import {
   describeSchedule,
   useCreateReminder,
@@ -8,19 +8,22 @@ import {
   useReminders,
   useSendTestReminder,
   useUpdateReminder,
+  type Reminder,
   type Schedule,
 } from "../../src/features/reminders/hooks";
-import { useTools } from "../../src/features/targets/hooks";
+import { useTargets, useTools } from "../../src/features/targets/hooks";
 import {
   Body,
   Button,
-  Caption,
-  Card,
-  Empty,
+  ColumnHead,
   ErrorText,
   Heading,
+  RowAction,
   Screen,
   Segmented,
+  TableAction,
+  TableHead,
+  TableNote,
   TextField,
   Toggle,
 } from "../../src/ui";
@@ -39,14 +42,38 @@ function buildSchedule(
   return { type, time: f.time };
 }
 
+function nextLabel(r: Reminder): string {
+  return r.nextFireAt
+    ? new Date(r.nextFireAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    : "—";
+}
+
+/**
+ * Column widths, shared by the head and every row. A phone keeps the reminder cell (schedule and next time folded
+ * under the title) with its controls on a line below; schedule, opens and next become columns as the page widens.
+ */
+const COL = {
+  reminder: "md:flex-[3]",
+  schedule: "hidden flex-[2] md:flex",
+  opens: "hidden flex-[2] lg:flex",
+  next: "hidden w-[136px] items-end lg:flex",
+  controls: "md:w-[248px]",
+};
+const ROW_GAP = "md:gap-3";
+
+/** Where a reminder's notification leads: "Target · Tool", or "—" when it opens the app. */
+type OpensLookup = (toolId: string | null) => { target?: string; tool: string };
+
 /** Reminders: list, create from presets (never raw rrule), enable toggle, send test. */
 export default function Reminders() {
   const reminders = useReminders();
   const tools = useTools();
+  const targets = useTargets();
   const create = useCreateReminder();
   const update = useUpdateReminder();
   const remove = useDeleteReminder();
   const test = useSendTestReminder();
+  const [adding, setAdding] = useState(false);
   const [type, setType] = useState<Schedule["type"]>("daily");
   const [form, setForm] = useState({
     time: "09:00",
@@ -59,7 +86,15 @@ export default function Reminders() {
   const [formError, setFormError] = useState<string>();
   const [testResult, setTestResult] = useState<string>();
 
-  const toolOptions = (tools.data?.items ?? []).map((t) => ({ value: t.id, label: t.name }));
+  const toolList = tools.data?.items ?? [];
+  const toolOptions = toolList.map((t) => ({ value: t.id, label: t.name }));
+  const opens: OpensLookup = (id) => {
+    if (!id) return { tool: "—" };
+    const tool = toolList.find((t) => t.id === id);
+    if (!tool) return { tool: "·" };
+    const target = targets.data?.items.find((t) => t.id === tool.changeTargetId);
+    return target ? { target: target.title, tool: tool.name } : { tool: tool.name };
+  };
 
   function submit() {
     const parsed = reminderScheduleSchema.safeParse(buildSchedule(type, form));
@@ -68,93 +103,172 @@ export default function Reminders() {
       return;
     }
     setFormError(undefined);
-    create.mutate({ schedule: parsed.data, title: form.title, ...(toolId ? { toolId } : {}) });
+    create.mutate(
+      { schedule: parsed.data, title: form.title, ...(toolId ? { toolId } : {}) },
+      { onSuccess: () => setAdding(false) },
+    );
+  }
+
+  function sendTest(id: string) {
+    test.mutate(id, {
+      onSuccess: (res) =>
+        setTestResult(
+          res.devices === 0
+            ? "No devices registered yet — open the iPhone app and allow notifications."
+            : `Sent to ${res.devices} device(s).`,
+        ),
+    });
   }
 
   return (
     <Screen testID="screen-reminders">
-      <Heading>Reminders</Heading>
+      <Heading hidden>Reminders</Heading>
       <ErrorText error={reminders.error ?? update.error ?? remove.error} />
-      {reminders.data?.items.length === 0 ? <Empty title="No reminders yet" /> : null}
-      {reminders.data?.items.map((r) => (
-        <Card key={r.id} testID="reminder-card">
-          <Body className="font-semibold">{r.title}</Body>
-          <Caption>
-            {describeSchedule(r.schedule)} · {r.timezone}
-            {r.nextFireAt
-              ? ` · next ${new Date(r.nextFireAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}`
-              : ""}
-          </Caption>
-          <Toggle
-            label="Enabled"
-            value={r.enabled}
-            onChange={(enabled) => update.mutate({ id: r.id, body: { enabled } })}
+      <View>
+        <TableHead className={ROW_GAP}>
+          <ColumnHead className={`flex-1 ${COL.reminder}`}>Reminder</ColumnHead>
+          <ColumnHead className={COL.schedule}>Schedule</ColumnHead>
+          <ColumnHead className={COL.opens}>Opens</ColumnHead>
+          <ColumnHead className={COL.next} numeric>
+            Next
+          </ColumnHead>
+          <View className={`hidden md:flex ${COL.controls}`} />
+        </TableHead>
+        {reminders.isPending ? <TableNote>Loading…</TableNote> : null}
+        {reminders.data?.items.length === 0 ? <TableNote>No reminders yet</TableNote> : null}
+        {reminders.data?.items.map((r) => (
+          <ReminderRow
+            key={r.id}
+            reminder={r}
+            opens={opens(r.toolId)}
+            testing={test.isPending && test.variables === r.id}
+            onToggle={(enabled) => update.mutate({ id: r.id, body: { enabled } })}
+            onTest={() => sendTest(r.id)}
+            onDelete={() => remove.mutate(r.id)}
           />
-          <View className="flex-row flex-wrap gap-2">
-            <Button
-              label="Send test"
-              variant="secondary"
-              compact
-              busy={test.isPending && test.variables === r.id}
-              onPress={() =>
-                test.mutate(r.id, {
-                  onSuccess: (res) =>
-                    setTestResult(
-                      res.devices === 0
-                        ? "No devices registered yet — open the iPhone app and allow notifications."
-                        : `Sent to ${res.devices} device(s).`,
-                    ),
-                })
-              }
-            />
-            <Button label="Delete" variant="danger" compact onPress={() => remove.mutate(r.id)} />
-          </View>
-        </Card>
-      ))}
+        ))}
+        {adding ? null : <TableAction label="New reminder" onPress={() => setAdding(true)} />}
+      </View>
       {testResult ? <Body muted>{testResult}</Body> : null}
 
-      <Heading level={2}>New reminder</Heading>
-      <Card>
-        <Segmented label="Schedule" value={type} options={PRESETS} onChange={setType} />
-        {type === "every_n_hours" ? (
-          <View className="gap-3">
+      {adding ? (
+        <View className="gap-3">
+          <Heading level={2}>New reminder</Heading>
+          <View className="w-full max-w-[640px] gap-3 px-2">
+            <Segmented label="Schedule" value={type} options={PRESETS} onChange={setType} />
+            {type === "every_n_hours" ? (
+              <View className="gap-3">
+                <TextField
+                  label="Every (hours)"
+                  keyboardType="number-pad"
+                  value={form.every}
+                  onChangeText={(every) => setForm({ ...form, every })}
+                />
+                <TextField
+                  label="From (HH:MM)"
+                  value={form.start}
+                  onChangeText={(start) => setForm({ ...form, start })}
+                />
+                <TextField
+                  label="Until (HH:MM)"
+                  value={form.end}
+                  onChangeText={(end) => setForm({ ...form, end })}
+                />
+              </View>
+            ) : (
+              <TextField
+                label="Time (HH:MM, 24-hour)"
+                value={form.time}
+                onChangeText={(time) => setForm({ ...form, time })}
+                testID="reminder-time"
+              />
+            )}
             <TextField
-              label="Every (hours)"
-              keyboardType="number-pad"
-              value={form.every}
-              onChangeText={(every) => setForm({ ...form, every })}
+              label="Notification text"
+              value={form.title}
+              onChangeText={(title) => setForm({ ...form, title })}
             />
-            <TextField
-              label="From (HH:MM)"
-              value={form.start}
-              onChangeText={(start) => setForm({ ...form, start })}
-            />
-            <TextField
-              label="Until (HH:MM)"
-              value={form.end}
-              onChangeText={(end) => setForm({ ...form, end })}
-            />
+            {toolOptions.length > 0 ? (
+              <Segmented
+                label="Opens quick log for"
+                value={toolId}
+                options={toolOptions}
+                onChange={setToolId}
+              />
+            ) : null}
+            {formError ? <Body className="text-alert">{formError}</Body> : null}
+            <ErrorText error={create.error} />
+            <View className="flex-row flex-wrap items-center gap-2">
+              <Button label="Add reminder" busy={create.isPending} onPress={submit} testID="add-reminder" />
+              <Button label="Cancel" variant="ghost" onPress={() => setAdding(false)} />
+            </View>
           </View>
-        ) : (
-          <TextField
-            label="Time (HH:MM, 24-hour)"
-            value={form.time}
-            onChangeText={(time) => setForm({ ...form, time })}
-            testID="reminder-time"
-          />
-        )}
-        <TextField
-          label="Notification text"
-          value={form.title}
-          onChangeText={(title) => setForm({ ...form, title })}
-        />
-        {toolOptions.length > 0 ? (
-          <Segmented label="Opens quick log for" value={toolId} options={toolOptions} onChange={setToolId} />
-        ) : null}
-        {formError ? <Body className="text-danger">{formError}</Body> : null}
-        <ErrorText error={create.error} />
-        <Button label="Add reminder" busy={create.isPending} onPress={submit} testID="add-reminder" />
-      </Card>
+        </View>
+      ) : null}
     </Screen>
+  );
+}
+
+/**
+ * One reminder. Nothing to open, so the row is not a link: its controls (enabled, send test, delete) sit at the
+ * right on wide screens and on their own line under the reminder on a phone.
+ */
+function ReminderRow(props: {
+  reminder: Reminder;
+  opens: { target?: string; tool: string };
+  testing: boolean;
+  onToggle: (enabled: boolean) => void;
+  onTest: () => void;
+  onDelete: () => void;
+}) {
+  const r = props.reminder;
+  const schedule = describeSchedule(r.schedule);
+  const opens = props.opens.target ? `${props.opens.target} · ${props.opens.tool}` : props.opens.tool;
+  return (
+    <View
+      testID="reminder-card"
+      className={`border-b border-rule px-2 pt-1 md:flex-row md:items-center md:py-1 ${ROW_GAP}`}
+    >
+      <View className={COL.reminder}>
+        <Text className="text-caption text-ink">{r.title}</Text>
+        <View className="md:hidden">
+          <Text className="text-caption text-dim">
+            {schedule} · {r.timezone}
+          </Text>
+        </View>
+        <View className="lg:hidden">
+          <Text className="text-caption text-dim">
+            {r.nextFireAt ? `next ${nextLabel(r)}` : "not scheduled"}
+            {r.toolId ? ` · opens ${opens}` : ""}
+          </Text>
+        </View>
+      </View>
+      <View className={COL.schedule}>
+        <Text className="text-caption text-ink">{schedule}</Text>
+        <Text className="text-caption text-dim">{r.timezone}</Text>
+      </View>
+      <View className={COL.opens}>
+        {props.opens.target ? (
+          <>
+            <Text className="text-caption text-ink" numberOfLines={2}>
+              {props.opens.target}
+            </Text>
+            <Text className="text-caption text-dim" numberOfLines={1}>
+              {props.opens.tool}
+            </Text>
+          </>
+        ) : (
+          <Text className="text-caption text-ink">{props.opens.tool}</Text>
+        )}
+      </View>
+      <View className={COL.next}>
+        <Text className="text-right text-caption tabular-nums text-ink">{nextLabel(r)}</Text>
+      </View>
+      <View className={`flex-row flex-wrap items-center gap-2 md:justify-end ${COL.controls}`}>
+        <Toggle label="Enabled" value={r.enabled} onChange={props.onToggle} />
+        <Button label="Send test" variant="ghost" compact busy={props.testing} onPress={props.onTest} />
+        <RowAction destructive label="Delete" onPress={props.onDelete} />
+      </View>
+    </View>
   );
 }
