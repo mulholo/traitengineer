@@ -58,7 +58,6 @@ export function createEntryService({ repos, now }: ServiceDeps) {
       if (q.toolId) filter.toolId = q.toolId;
       if (q.since) filter.since = toIso(q.since);
       if (q.until) filter.until = toIso(q.until);
-      if (q.tag) filter.tag = q.tag;
       const rows = await repos.entries.list(userId, {
         ...filter,
         limit: q.limit + 1,

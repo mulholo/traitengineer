@@ -23,6 +23,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, jwt } from "better-auth/plugins";
 import { v7 as uuidv7 } from "uuid";
 import type { Env } from "../env.ts";
+import { listSessionsWithoutFreshness } from "./list-sessions.ts";
 
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 export const MIN_PASSWORD_LENGTH = 12;
@@ -100,6 +101,7 @@ export function createAuth(db: Database, env: Env) {
       bearer(),
       expo(),
       jwt(),
+      listSessionsWithoutFreshness(),
       // OAuth 2.1 authorisation server for MCP clients (Claude custom connectors). ADR 0027.
       mcp({
         loginPage: "/sign-in",

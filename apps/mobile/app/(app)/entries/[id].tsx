@@ -27,7 +27,6 @@ function text(p: Record<string, unknown>, key: string): string {
 /** The entry as a spec sheet: when, where it was logged, then each answered field. Empty rows drop out. */
 function entryRows(entry: Entry, toolName: string | undefined, targetTitle: string | undefined) {
   const p = entry.payload;
-  const tags = Array.isArray(p["tags"]) ? (p["tags"] as unknown[]).filter((t) => typeof t === "string") : [];
   return [
     {
       label: "When",
@@ -40,7 +39,6 @@ function entryRows(entry: Entry, toolName: string | undefined, targetTitle: stri
     { label: "Tool", value: toolName ?? "" },
     ...FIELDS.map(([key, label]) => ({ label, value: text(p, key) })),
     { label: "Difficulty", value: typeof p["difficulty"] === "number" ? `${p["difficulty"]} of 5` : "" },
-    { label: "Tags", value: tags.join(", ") },
   ];
 }
 

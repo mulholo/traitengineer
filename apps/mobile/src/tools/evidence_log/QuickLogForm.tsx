@@ -6,9 +6,8 @@ import { z } from "zod";
 import { Button, Segmented, TextField } from "../../ui";
 import type { QuickLogFormProps } from "../types";
 
-/** Form values: tags are typed as one comma-separated string; difficulty as a string choice. */
-const formSchema = evidenceLogPayloadSchema.omit({ tags: true, difficulty: true }).extend({
-  tags: z.string().max(600),
+/** Form values: difficulty is a string choice. */
+const formSchema = evidenceLogPayloadSchema.omit({ difficulty: true }).extend({
   difficulty: z.enum(["", "1", "2", "3", "4", "5"]),
 });
 type FormValues = z.input<typeof formSchema>;
@@ -36,11 +35,6 @@ export function toPayload(values: FormValues): Record<string, unknown> {
     if (v) payload[name] = v;
   }
   if (values.difficulty) payload["difficulty"] = Number(values.difficulty);
-  payload["tags"] = values.tags
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean)
-    .slice(0, 10);
   return evidenceLogPayloadSchema.parse(payload);
 }
 
@@ -55,14 +49,13 @@ function fromPayload(p: Record<string, unknown> | undefined): FormValues {
     details: str("details"),
     difficulty:
       typeof p?.["difficulty"] === "number" ? (String(p["difficulty"]) as FormValues["difficulty"]) : "",
-    tags: Array.isArray(p?.["tags"]) ? (p["tags"] as string[]).join(", ") : "",
   };
 }
 
 /**
  * Evidence-log quick-log form, as a plain column of fields (the page scrolls). The first field (what I did) is
  * autofocused and Save sits straight under it, so a quick log is type-then-save with Save on screen above a
- * phone keyboard; the optional reflections, difficulty and tags follow.
+ * phone keyboard; the optional reflections and difficulty follow.
  */
 export function QuickLogForm({
   tool,
@@ -135,20 +128,6 @@ export function QuickLogForm({
             )}
           />
         ) : null}
-        <Controller
-          control={control}
-          name="tags"
-          render={({ field }) => (
-            <TextField
-              label="Tags"
-              hint="Comma-separated, up to 10"
-              autoCapitalize="none"
-              value={field.value}
-              onChangeText={field.onChange}
-              testID="field-tags"
-            />
-          )}
-        />
       </View>
     </View>
   );

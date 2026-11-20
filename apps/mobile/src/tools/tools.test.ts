@@ -19,14 +19,12 @@ test("evidence log form values become a valid payload", () => {
       uncertain: "  ",
       details: "",
       difficulty: "3",
-      tags: "work, , home ,work2",
     }),
   ).toEqual({
     summary: "Sent it",
     expected: "Disaster",
     supports: "Good enough",
     difficulty: 3,
-    tags: ["work", "home", "work2"],
   });
-  expect(toPayload({ summary: "x", difficulty: "", tags: "" })).toEqual({ summary: "x", tags: [] });
+  expect(toPayload({ summary: "x", difficulty: "" })).toEqual({ summary: "x" });
 });
