@@ -111,8 +111,8 @@ Settings → Secrets and variables → Actions. The deploy workflow skips each p
 hand (Settings → General → "Allow auto-merge" must be on). The `Auto-update PRs` workflow
 (`.github/workflows/auto-update.yml`) updates the oldest queued PR that is behind `main`, one at a time, so each PR
 is tested against the latest `main` before it merges. It needs the `AUTO_UPDATE_TOKEN` secret: a fine-grained
-personal access token for this repo only, with Contents, Pull requests and Workflows set to read and write and
-Checks set to read.
+personal access token for this repo only, with Contents, Pull requests and Workflows set to read and write
+(fine-grained tokens have no Checks permission; reading check runs needs none on a public repo).
 
 ## Using the MCP server locally
 
