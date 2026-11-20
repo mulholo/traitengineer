@@ -87,7 +87,7 @@ Milestone log: date, milestone, what shipped, anything deferred.
 - **Tests:** jest-expo (tool UI coverage, quick-log form, offline queue incl. restart); Playwright e2e at 390px
   and 1280px (sign-in → create target → log in three taps; offline logging + sync; reload persistence; OAuth
   consent end to end; layout; 44px tap targets; every screen). Screenshots in `docs/screenshots/{narrow,wide}`.
-- **Deferred:** iOS simulator dev-build check (see scratchpad / human tasks); native passkeys (ADR 0029).
+- **Deferred:** iOS simulator dev-build check (see human tasks); native passkeys (ADR 0029).
 - **Decisions:** ADRs 0028 (mobile implementation choices) and 0029 (passkeys on web first).
 
 ## 2026-10-15 — M5 Notifications
