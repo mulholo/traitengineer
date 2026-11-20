@@ -186,7 +186,11 @@ describe("reminders, devices and me", () => {
       (await h.json("PATCH", `/v1/reminders/${id}`, { token, body: { enabled: false } })).body,
     ).toMatchObject({ enabled: false, nextFireAt: null });
     const before = h.pushed.length;
-    expect((await h.json("POST", `/v1/reminders/${id}/test`, { token })).body).toEqual({ devices: 1 });
+    expect((await h.json("POST", `/v1/reminders/${id}/test`, { token })).body).toEqual({
+      devices: 1,
+      failed: 0,
+      errors: [],
+    });
     expect(h.pushed.length).toBe(before + 1);
     expect((await h.request("DELETE", `/v1/reminders/${id}`, { token })).status).toBe(204);
     const badSchedule = await h.json("POST", "/v1/reminders", {

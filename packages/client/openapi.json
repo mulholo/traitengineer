@@ -3230,18 +3230,32 @@
         ],
         "responses": {
           "200": {
-            "description": "Number of devices notified",
+            "description": "Result of the test send",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "devices": {
-                      "type": "integer"
+                      "type": "integer",
+                      "description": "Active devices the test was sent to"
+                    },
+                    "failed": {
+                      "type": "integer",
+                      "description": "Devices the push service refused straight away"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Distinct reasons the push service gave for those refusals"
                     }
                   },
                   "required": [
-                    "devices"
+                    "devices",
+                    "failed",
+                    "errors"
                   ]
                 }
               }

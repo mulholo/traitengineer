@@ -1628,14 +1628,19 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Number of devices notified */
+                /** @description Result of the test send */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
+                            /** @description Active devices the test was sent to */
                             devices: number;
+                            /** @description Distinct reasons the push service gave for those refusals */
+                            errors: string[];
+                            /** @description Devices the push service refused straight away */
+                            failed: number;
                         };
                     };
                 };

@@ -12,6 +12,7 @@ import {
   type Schedule,
 } from "../../src/features/reminders/hooks";
 import { useTargets, useTools } from "../../src/features/targets/hooks";
+import { notificationsSupported } from "../../src/notifications";
 import {
   Body,
   Button,
@@ -64,6 +65,24 @@ const ROW_GAP = "md:gap-3";
 /** Where a reminder's notification leads: "Target · Tool", or "—" when it opens the app. */
 type OpensLookup = (toolId: string | null) => { target?: string; tool: string };
 
+/**
+ * What a test send did. Only the iPhone app receives notifications (web has none in v1), so every message says
+ * where to look, and refusals from the push service are shown rather than reported as sent.
+ */
+function describeTestResult(res: { devices: number; failed: number; errors: string[] }): string {
+  if (res.devices === 0) {
+    return "No devices registered yet. Open the iPhone app, sign in and allow notifications, then try again.";
+  }
+  const sent = res.devices - res.failed;
+  const reasons = res.errors.length > 0 ? ` Push service said: ${res.errors.join("; ")}.` : "";
+  if (sent === 0) return `Not sent: the push service refused all ${res.devices} device(s).${reasons}`;
+  const refused = res.failed > 0 ? ` ${res.failed} refused.${reasons}` : "";
+  const where = notificationsSupported
+    ? ""
+    : " Check your iPhone; the web app does not receive notifications.";
+  return `Sent to ${sent} device(s).${where}${refused}`;
+}
+
 /** Reminders: list, create from presets (never raw rrule), enable toggle, send test. */
 export default function Reminders() {
   const reminders = useReminders();
@@ -110,20 +129,14 @@ export default function Reminders() {
   }
 
   function sendTest(id: string) {
-    test.mutate(id, {
-      onSuccess: (res) =>
-        setTestResult(
-          res.devices === 0
-            ? "No devices registered yet — open the iPhone app and allow notifications."
-            : `Sent to ${res.devices} device(s).`,
-        ),
-    });
+    setTestResult(undefined);
+    test.mutate(id, { onSuccess: (res) => setTestResult(describeTestResult(res)) });
   }
 
   return (
     <Screen testID="screen-reminders">
       <Heading hidden>Reminders</Heading>
-      <ErrorText error={reminders.error ?? update.error ?? remove.error} />
+      <ErrorText error={reminders.error ?? update.error ?? remove.error ?? test.error} />
       <View>
         <TableHead className={ROW_GAP}>
           <ColumnHead className={`flex-1 ${COL.reminder}`}>Reminder</ColumnHead>
