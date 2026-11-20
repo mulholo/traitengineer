@@ -74,7 +74,8 @@ jobs:
                 core.notice(`Updated #${pr.number} with ${base} (${cmp.behind_by} commit(s) behind).`);
                 return;
               } catch (error) {
-                core.warning(`Could not update #${pr.number} (${error.message}); it probably conflicts with ${base}. Skipping it.`);
+                const why = error.status === 422 ? `it probably conflicts with ${base}` : 'check AUTO_UPDATE_TOKEN\'s permissions';
+                core.warning(`Could not update #${pr.number} (${error.status}: ${error.message}); ${why}. Skipping it.`);
               }
             }
             core.info('Nothing to update.');
