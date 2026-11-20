@@ -55,9 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // already signed out server-side
     }
     await setSessionToken(null);
-    queryClient.clear();
-    kvStorage.removeItem("te.query-cache");
+    // Stop in-flight fetches (a late /v1/me must not sign us back in), then mark signed out on the query this
+    // provider observes so (app) redirects to /sign-in at once. queryClient.clear() would remove that query
+    // instead, leaving the observer holding the old user until the app restarts.
+    await queryClient.cancelQueries();
     queryClient.setQueryData(keys.me, null);
+    queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== keys.me[0] });
+    queryClient.getMutationCache().clear();
+    kvStorage.removeItem("te.query-cache");
   }, [queryClient]);
 
   const value = useMemo<AuthState>(() => {

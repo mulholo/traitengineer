@@ -227,7 +227,8 @@ describe("reminders, devices and me", () => {
       token,
       body: { timezone: "America/New_York", displayName: "J" },
     });
-    expect(patched.body).toMatchObject({ timezone: "America/New_York", displayName: "J" });
+    expect(patched.body).toMatchObject({ timezone: "America/New_York" });
+    expect(patched.body).not.toHaveProperty("displayName");
     expect((await h.json("PATCH", "/v1/me", { token, body: { timezone: "Mars/Olympus" } })).status).toBe(400);
   });
 });

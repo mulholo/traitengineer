@@ -1227,7 +1227,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update time zone or display name */
+        /** Update time zone */
         patch: {
             parameters: {
                 query?: never;
@@ -2609,7 +2609,6 @@ export interface components {
              * @example 2026-10-14T08:30:00.000Z
              */
             createdAt: string;
-            displayName: string;
             /** @description Owner's email (only returned to the authenticated owner) */
             email: string;
             /**
@@ -2799,7 +2798,6 @@ export interface components {
             };
         };
         UpdateMe: {
-            displayName?: string;
             /** @example Europe/London */
             timezone?: string;
         };

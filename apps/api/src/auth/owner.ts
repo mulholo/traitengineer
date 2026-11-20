@@ -12,10 +12,7 @@ function checkPassword(password: string) {
  * Create the single owner account (user + credential account with a scrypt hash). Refuses if any user
  * exists, so it can never be used to add a second account.
  */
-export async function createOwner(
-  auth: Auth,
-  input: { email: string; password: string; displayName?: string },
-) {
+export async function createOwner(auth: Auth, input: { email: string; password: string }) {
   checkPassword(input.password);
   const ctx = await auth.$context;
   const existing = await ctx.adapter.count({ model: "user" });
@@ -26,7 +23,8 @@ export async function createOwner(
   const user = await ctx.internalAdapter.createUser(
     {
       email: input.email.trim().toLowerCase(),
-      name: input.displayName ?? "Owner",
+      // Better Auth requires a name; the app never shows it (ADR 0035).
+      name: "Owner",
       emailVerified: true,
       timezone: DEFAULT_TIME_ZONE,
     },

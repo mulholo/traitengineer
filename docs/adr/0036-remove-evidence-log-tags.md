@@ -1,4 +1,4 @@
-# 0035. Remove evidence-log tags
+# 0036. Remove evidence-log tags
 
 - Status: accepted (amends 0023)
 - Date: 2026-11-20

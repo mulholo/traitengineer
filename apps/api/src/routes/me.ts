@@ -8,7 +8,6 @@ function toMe(user: User, principal: Principal | undefined): Me {
   return {
     id: user.id,
     email: user.email,
-    displayName: user.displayName,
     timezone: user.timezone,
     scopes: principal?.scopes ?? [],
     createdAt: user.createdAt,
@@ -30,7 +29,7 @@ export function registerMeRoutes(app: OpenAPIHono<AppEnv>, s: Services) {
     route("Me", {
       method: "patch",
       path: "/v1/me",
-      summary: "Update time zone or display name",
+      summary: "Update time zone",
       request: { body: jsonBody(updateMeSchema) },
       responses: { 200: json(meSchema, "Updated") },
     }),

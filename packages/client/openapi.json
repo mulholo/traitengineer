@@ -1129,9 +1129,6 @@
             "type": "string",
             "description": "Owner's email (only returned to the authenticated owner)"
           },
-          "displayName": {
-            "type": "string"
-          },
           "timezone": {
             "type": "string"
           },
@@ -1155,7 +1152,6 @@
         "required": [
           "id",
           "email",
-          "displayName",
           "timezone",
           "scopes",
           "createdAt"
@@ -1168,11 +1164,6 @@
             "type": "string",
             "minLength": 1,
             "example": "Europe/London"
-          },
-          "displayName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80
           }
         }
       }
@@ -3898,7 +3889,7 @@
         }
       },
       "patch": {
-        "summary": "Update time zone or display name",
+        "summary": "Update time zone",
         "tags": [
           "Me"
         ],
