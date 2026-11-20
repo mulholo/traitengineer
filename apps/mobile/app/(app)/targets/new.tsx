@@ -1,14 +1,18 @@
 import { router } from "expo-router";
+import { View } from "react-native";
 import { useCreateTarget } from "../../../src/features/targets/hooks";
 import { TargetForm } from "../../../src/features/targets/TargetForm";
-import { Body, ErrorText, Heading, Screen } from "../../../src/ui";
+import { BackLink } from "../../../src/ui/BackLink";
+import { ErrorText, Heading, Screen } from "../../../src/ui";
 
 export default function NewTarget() {
   const create = useCreateTarget();
   return (
-    <Screen testID="screen-target-new">
-      <Heading>New change target</Heading>
-      <Body muted>An evidence log is attached automatically so you can start logging straight away.</Body>
+    <Screen narrow testID="screen-target-new">
+      <View>
+        <BackLink label="Targets" fallback="/targets" />
+        <Heading>New change target</Heading>
+      </View>
       <ErrorText error={create.error} />
       <TargetForm
         submitLabel="Create target"

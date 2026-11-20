@@ -1,13 +1,12 @@
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { Platform, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/auth/session";
 import { LAST_TOOL_KEY, useLogEntry } from "../../src/features/entries/hooks";
 import { useTarget, useTool } from "../../src/features/targets/hooks";
 import { kvStorage } from "../../src/platform/storage";
 import { successHaptic } from "../../src/platform/haptics";
 import { uiFor } from "../../src/tools";
-import { Body, Button, Caption, ErrorText, Heading, Loading } from "../../src/ui";
+import { Body, Button, ErrorText, Heading, Loading, Screen } from "../../src/ui";
 
 function newClientId(): string {
   return (
@@ -36,36 +35,33 @@ export default function QuickLog() {
   const ui = tool.data ? uiFor(tool.data.type) : undefined;
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" testID="screen-log">
-      <View className="w-full max-w-[720px] flex-1 gap-3 self-center px-gutter py-4">
-        <View className="flex-row items-start justify-between gap-2">
-          <View className="flex-1">
-            <Heading level={2}>{tool.data?.name ?? "Log"}</Heading>
-            {target.data ? <Caption>{target.data.title}</Caption> : null}
-          </View>
-          <Button label="Cancel" variant="ghost" compact onPress={close} />
+    <Screen narrow testID="screen-log">
+      <View className="flex-row items-start justify-between gap-2">
+        <View className="flex-1 justify-center self-stretch">
+          <Heading>{target.data?.title ?? tool.data?.name ?? "Log"}</Heading>
         </View>
-        <ErrorText error={tool.error ?? log.error} />
-        {tool.isPending ? <Loading /> : null}
-        {tool.data && ui ? (
-          <ui.QuickLogForm
-            tool={tool.data}
-            onSubmit={(payload) => {
-              // Fire-and-forget: the mutation is persisted and replays when online, so the sheet can close now.
-              log.mutate({
-                toolId: tool.data.id,
-                clientId: newClientId(),
-                payload,
-                source: Platform.OS === "web" ? "web" : "mobile",
-              });
-              successHaptic();
-              close();
-            }}
-          />
-        ) : tool.data ? (
-          <Body muted>This tool type is not supported by this version of the app.</Body>
-        ) : null}
+        <Button label="Cancel" variant="ghost" compact onPress={close} />
       </View>
-    </SafeAreaView>
+      <ErrorText error={tool.error ?? log.error} />
+      {tool.isPending ? <Loading /> : null}
+      {tool.data && ui ? (
+        <ui.QuickLogForm
+          tool={tool.data}
+          onSubmit={(payload) => {
+            // Fire-and-forget: the mutation is persisted and replays when online, so the sheet can close now.
+            log.mutate({
+              toolId: tool.data.id,
+              clientId: newClientId(),
+              payload,
+              source: Platform.OS === "web" ? "web" : "mobile",
+            });
+            successHaptic();
+            close();
+          }}
+        />
+      ) : tool.data ? (
+        <Body muted>This tool type is not supported by this version of the app.</Body>
+      ) : null}
+    </Screen>
   );
 }

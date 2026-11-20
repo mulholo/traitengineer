@@ -5,7 +5,7 @@ import { authFetch } from "../src/api/client";
 import { currentOAuthQuery, goTo } from "../src/auth/oauth";
 import { passkeysSupported, signInWithPasskey } from "../src/auth/passkey";
 import { useAuth } from "../src/auth/session";
-import { Body, Button, ErrorText, Heading, Screen, TextField } from "../src/ui";
+import { Body, Button, ErrorText, Heading, Masthead, Screen, TextField } from "../src/ui";
 
 /** Email + password, and a passkey button where supported. No sign-up and no "forgot password" (single owner). */
 export default function SignIn() {
@@ -63,12 +63,11 @@ export default function SignIn() {
   }
 
   return (
-    <Screen testID="screen-sign-in">
-      <View className="mt-8 gap-2">
-        <Heading>Trait Engineer</Heading>
-        <Body muted>
-          {oauthQuery ? "Sign in to connect an AI assistant to your account." : "Sign in to continue."}
-        </Body>
+    <Screen narrow testID="screen-sign-in">
+      <Masthead />
+      <View className="gap-1">
+        <Heading>Sign in</Heading>
+        {oauthQuery ? <Body muted>Sign in to connect an AI assistant to your account.</Body> : null}
       </View>
       <TextField
         label="Email"
@@ -91,21 +90,23 @@ export default function SignIn() {
         testID="password"
       />
       <ErrorText error={error} />
-      <Button
-        label="Sign in"
-        onPress={() => void submit()}
-        busy={busy}
-        disabled={!email || !password}
-        testID="sign-in"
-      />
-      {passkeysSupported ? (
+      <View className="flex-row flex-wrap items-center gap-3">
         <Button
-          label="Sign in with a passkey"
-          variant="secondary"
-          onPress={() => void passkey()}
-          disabled={busy}
+          label="Sign in"
+          onPress={() => void submit()}
+          busy={busy}
+          disabled={!email || !password}
+          testID="sign-in"
         />
-      ) : null}
+        {passkeysSupported ? (
+          <Button
+            label="Sign in with a passkey"
+            variant="ghost"
+            onPress={() => void passkey()}
+            disabled={busy}
+          />
+        ) : null}
+      </View>
     </Screen>
   );
 }

@@ -1,9 +1,17 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import type { Schemas } from "@te/client";
 import { api, unwrap } from "../../api/client";
 import { keys } from "../../api/keys";
 
 export type ChangeTarget = Schemas["ChangeTarget"];
+export type TargetSummary = Schemas["ChangeTargetSummary"];
 export type Tool = Schemas["Tool"];
 export type Status = ChangeTarget["status"];
 
@@ -28,11 +36,27 @@ export function useTarget(id: string) {
   });
 }
 
-export function useTargetSummary(id: string) {
-  return useQuery({
+function summaryQuery(id: string) {
+  return queryOptions({
     queryKey: keys.summary(id),
     queryFn: () =>
       unwrap(api.GET("/v1/change-targets/{id}/summary", { params: { path: { id }, query: { weeks: 12 } } })),
+  });
+}
+
+export function useTargetSummary(id: string) {
+  return useQuery(summaryQuery(id));
+}
+
+/** Summaries for several targets (one request each, sharing the detail screen's cache), keyed by target ID. */
+export function useTargetSummaries(ids: readonly string[]): Map<string, TargetSummary> {
+  return useQueries({
+    queries: ids.map((id) => summaryQuery(id)),
+    combine: (results) => {
+      const byId = new Map<string, TargetSummary>();
+      for (const r of results) if (r.data) byId.set(r.data.changeTargetId, r.data);
+      return byId;
+    },
   });
 }
 

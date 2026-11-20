@@ -26,8 +26,8 @@ export function SyncBanner() {
   }).filter(Boolean).length;
   if (pending === 0) return null;
   return (
-    <View accessibilityRole="alert" testID="sync-banner" className="bg-primary px-4 py-2">
-      <Text className="text-center text-body font-semibold text-on-primary">
+    <View accessibilityRole="alert" testID="sync-banner" className="bg-ink px-4 py-1">
+      <Text className="text-center text-caption font-semibold text-paper">
         {pending} {pending === 1 ? "entry" : "entries"} waiting to sync
       </Text>
     </View>
@@ -49,17 +49,19 @@ export function NavBar({ state, navigation }: BottomTabBarProps) {
         accessibilityLabel={item.label}
         accessibilityState={{ selected: active }}
         onPress={() => navigation.navigate(item.name)}
-        className={`min-h-tap justify-center rounded-control ${wide ? "px-4" : "flex-1 items-center px-1"} ${active ? "bg-surface" : ""}`}
+        className={`group min-h-tap justify-center ${wide ? "" : "flex-1 items-center"}`}
       >
         {/* One line, shrinking slightly on narrow phones rather than wrapping ("Reminders" on a 390pt iPhone). */}
-        <Text
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.8}
-          className={`${wide ? "text-body" : "text-caption"} ${active ? "font-semibold text-primary" : "text-muted"}`}
-        >
-          {item.label}
-        </Text>
+        <View className={`px-1.5 py-0.5 group-hover:bg-mark ${active ? "bg-mark" : ""}`}>
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+            className={`text-caption ${active ? "font-semibold text-ink" : "text-link"}`}
+          >
+            {item.label}
+          </Text>
+        </View>
       </Pressable>
     );
   });
@@ -68,10 +70,10 @@ export function NavBar({ state, navigation }: BottomTabBarProps) {
     return (
       <View
         role="navigation"
-        className="h-full w-56 gap-1 border-r border-border bg-bg px-3 py-6"
-        style={{ paddingTop: insets.top + 24 }}
+        className="h-full w-44 border-r border-rule bg-paper px-3"
+        style={{ paddingTop: insets.top + 12 }}
       >
-        <Text className="mb-4 px-4 text-title font-bold text-text">Trait Engineer</Text>
+        <Text className="mb-2 min-h-tap px-1.5 py-3 text-caption font-semibold text-ink">Trait Engineer</Text>
         {items}
       </View>
     );
@@ -79,7 +81,7 @@ export function NavBar({ state, navigation }: BottomTabBarProps) {
   return (
     <View
       role="tablist"
-      className="flex-row border-t border-border bg-bg px-2 pt-1"
+      className="flex-row border-t border-rule bg-paper px-2"
       style={{ paddingBottom: Math.max(insets.bottom, 8) }}
     >
       {items}
