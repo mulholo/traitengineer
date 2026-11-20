@@ -22,7 +22,6 @@ test("uses the tool's prompt as the first field and submits a validated payload"
   await fireEvent.changeText(summary, "Sent the proposal");
   await fireEvent.changeText(screen.getByLabelText("What happened"), "Signed same day");
   await fireEvent.press(screen.getByLabelText("4"));
-  await fireEvent.changeText(screen.getByLabelText("Tags"), "work, sales");
   await fireEvent.press(screen.getByText("Save"));
 
   await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
@@ -30,7 +29,6 @@ test("uses the tool's prompt as the first field and submits a validated payload"
     summary: "Sent the proposal",
     happened: "Signed same day",
     difficulty: 4,
-    tags: ["work", "sales"],
   });
 });
 
@@ -57,5 +55,5 @@ test("prefills an existing payload when editing", async () => {
     />,
   );
   expect(screen.getByLabelText("What did you ship?").props.value).toBe("Old");
-  expect(screen.getByLabelText("Tags").props.value).toBe("a, b");
+  expect(screen.queryByLabelText("Tags")).toBeNull();
 });

@@ -80,7 +80,7 @@ describe("change targets, tools and entries over REST", () => {
       toolId,
       clientId,
       source: "web",
-      payload: { summary: "Sent it", expected: "Disaster", happened: "Fine", tags: ["work"] },
+      payload: { summary: "Sent it", expected: "Disaster", happened: "Fine" },
     };
     const first = await h.json("POST", "/v1/entries", { token, body: entry });
     expect(first.status).toBe(201);
@@ -89,9 +89,9 @@ describe("change targets, tools and entries over REST", () => {
     expect(again.body["id"]).toBe(first.body["id"]);
     const entryId = first.body["id"] as string;
 
-    expect(
-      (await h.json("GET", `/v1/entries?tag=work&changeTargetId=${id}`, { token })).body["items"],
-    ).toHaveLength(1);
+    expect((await h.json("GET", `/v1/entries?changeTargetId=${id}`, { token })).body["items"]).toHaveLength(
+      1,
+    );
     expect(
       (
         await h.json("PATCH", `/v1/entries/${entryId}`, {

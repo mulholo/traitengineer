@@ -53,7 +53,6 @@ export async function seedData(request: APIRequestContext, token: string) {
         happened: "It was fine",
         supports: "Good enough is good enough",
         difficulty: (i % 5) + 1,
-        tags: ["work"],
       },
     });
   }

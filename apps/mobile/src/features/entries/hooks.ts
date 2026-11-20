@@ -10,7 +10,6 @@ export type EntryFilter = {
   toolId?: string;
   since?: string;
   until?: string;
-  tag?: string;
 };
 
 export function useEntries(filter: EntryFilter = {}, limit = 50) {
