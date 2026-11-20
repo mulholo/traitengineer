@@ -17,6 +17,8 @@ PORT = "8080"
 WEB_DIST_DIR = "/app/web"
 CLIENT_IP_HEADER = "fly-client-ip"
 LOG_LEVEL = "info"
+# Apple Developer Team ID (public): serves apple-app-site-association for shared web credentials.
+APPLE_TEAM_ID = "3F9QLTVDW9"
 
 [http_service]
 internal_port = 8080

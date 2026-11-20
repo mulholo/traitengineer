@@ -11,6 +11,7 @@ export const NAV_ROUTES = [
   { name: "index", label: "Today" },
   { name: "targets", label: "Targets" },
   { name: "reminders", label: "Reminders" },
+  { name: "meditations", label: "Meditations" },
   { name: "settings", label: "Settings" },
 ] as const;
 

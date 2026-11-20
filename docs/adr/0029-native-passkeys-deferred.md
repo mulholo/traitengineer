@@ -20,3 +20,9 @@ the production domain, none of which exist before M6 (domain, Apple account).
 ## Alternatives considered
 
 - Ship native passkeys now: cannot be verified without the production domain and Apple team ID.
+
+## Update (2026-11-20)
+
+The shared web credentials half is done: the app has `webcredentials:<host>` in `ios.associatedDomains` and the
+API serves `apple-app-site-association` once `APPLE_TEAM_ID` is set, so password managers offer the domain's
+logins in the app. A native passkey module is still deferred.

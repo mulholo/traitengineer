@@ -20,7 +20,18 @@ export const envSchema = z
     SENTRY_DSN: optionalString,
     EXPO_ACCESS_TOKEN: optionalString,
     WEB_DIST_DIR: optionalString,
-    /** `owner/name` of the private archive repo and a token with Contents read/write on it (M7). */
+    /** Apple Developer Team ID; with IOS_BUNDLE_ID it enables `apple-app-site-association` (http/app-links.ts). */
+    APPLE_TEAM_ID: z.preprocess(
+      emptyToUndefined,
+      z
+        .string()
+        .regex(/^[A-Z0-9]{10}$/)
+        .optional(),
+    ),
+    IOS_BUNDLE_ID: z.string().default("com.mulholo.traitengineer"),
+    /** Comma-separated SHA-256 signing cert fingerprints; enables `assetlinks.json` for ANDROID_PACKAGE. */
+    ANDROID_CERT_SHA256: optionalString,
+    ANDROID_PACKAGE: z.string().default("com.mulholo.traitengineer"),
     WRITE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
   })
   .superRefine((env, ctx) => {
