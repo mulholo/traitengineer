@@ -6,6 +6,7 @@ import { requestId } from "hono/request-id";
 import type { Auth } from "./auth/better-auth.ts";
 import { mountAuth, mountTestSession } from "./auth/routes.ts";
 import type { Env } from "./env.ts";
+import { mountAppLinks } from "./http/app-links.ts";
 import { authenticate, requestLogger, requireScopes, writeRateLimit } from "./http/middleware.ts";
 import { createOnError, problem } from "./http/problem.ts";
 import { mountMcp, mountWellKnown } from "./mcp/mount.ts";
@@ -42,7 +43,16 @@ export const OPENAPI_INFO = {
 };
 
 /** Reserved by the API; everything else falls through to the web app (M4). */
-export const RESERVED_PREFIXES = ["/v1", "/mcp", "/api", "/.well-known", "/health", "/openapi.json", "/docs"];
+export const RESERVED_PREFIXES = [
+  "/v1",
+  "/mcp",
+  "/api",
+  "/.well-known",
+  "/apple-app-site-association",
+  "/health",
+  "/openapi.json",
+  "/docs",
+];
 
 export function createApp(deps: AppDeps) {
   const { env, services, auth } = deps;
@@ -73,6 +83,7 @@ export function createApp(deps: AppDeps) {
   registerHealthRoute(app, deps.checkDb);
   mountAuth(app, { auth, services, env });
   if (env.NODE_ENV === "test") mountTestSession(app, { auth });
+  mountAppLinks(app, env); // before mountWellKnown, whose /.well-known/* catch-all goes to Better Auth
   mountWellKnown(app, { auth });
   mountMcp(app, { auth, services, env, ...(deps.nowDate ? { now: deps.nowDate } : {}) });
 

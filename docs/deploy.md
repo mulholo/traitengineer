@@ -39,23 +39,32 @@ Then create a `read`-scoped personal access token in Settings → Tokens and sav
 
 ## Configuration
 
-| Name                                                           | Where                        | Notes                                                                   |
-| -------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------- |
-| `DATABASE_URL`                                                 | Fly secret                   | Neon **pooled** URL, used by the app                                    |
-| `DATABASE_URL_DIRECT`                                          | Fly secret                   | Neon **direct** URL, used by migrations and pg-boss (session features)  |
-| `BETTER_AUTH_SECRET`                                           | Fly secret                   | 32+ random bytes; rotating it signs everyone out                        |
-| `PUBLIC_URL`                                                   | Fly secret + GitHub variable | `https://…`, no trailing slash; also the MCP resource and passkey RP ID |
-| `OWNER_EMAIL`                                                  | Fly secret                   | Only read by `user:create-owner` / `user:set-password`                  |
-| `EXPO_ACCESS_TOKEN`                                            | Fly secret (optional)        | Only if Expo push security is enabled for the project                   |
-| `SENTRY_DSN`                                                   | Fly secret (optional)        |                                                                         |
-| `NODE_ENV`, `ROLE`, `PORT`, `WEB_DIST_DIR`, `CLIENT_IP_HEADER` | `fly.toml` `[env]`           |                                                                         |
-| `FLY_API_TOKEN`, `EXPO_TOKEN`, `CI_PERSONAL_ACCESS_TOKEN`      | GitHub secrets               |                                                                         |
-| `FLY_APP`, `PUBLIC_URL`, `EAS_PROJECT_ID`, `IOS_BUNDLE_ID`     | GitHub variables             |                                                                         |
-| `IOS_RELEASE`                                                  | GitHub variable              | `true` once Apple credentials are in EAS; gates the mobile deploy job   |
+| Name                                                           | Where                         | Notes                                                                   |
+| -------------------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------- |
+| `DATABASE_URL`                                                 | Fly secret                    | Neon **pooled** URL, used by the app                                    |
+| `DATABASE_URL_DIRECT`                                          | Fly secret                    | Neon **direct** URL, used by migrations and pg-boss (session features)  |
+| `BETTER_AUTH_SECRET`                                           | Fly secret                    | 32+ random bytes; rotating it signs everyone out                        |
+| `PUBLIC_URL`                                                   | Fly secret + GitHub variable  | `https://…`, no trailing slash; also the MCP resource and passkey RP ID |
+| `OWNER_EMAIL`                                                  | Fly secret                    | Only read by `user:create-owner` / `user:set-password`                  |
+| `EXPO_ACCESS_TOKEN`                                            | Fly secret (optional)         | Only if Expo push security is enabled for the project                   |
+| `SENTRY_DSN`                                                   | Fly secret (optional)         |                                                                         |
+| `APPLE_TEAM_ID`                                                | `fly.toml` `[env]`            | Serves `apple-app-site-association` (shared web credentials, see below) |
+| `ANDROID_CERT_SHA256`                                          | `fly.toml` `[env]` (optional) | Comma-separated signing cert fingerprints; serves `assetlinks.json`     |
+| `NODE_ENV`, `ROLE`, `PORT`, `WEB_DIST_DIR`, `CLIENT_IP_HEADER` | `fly.toml` `[env]`            |                                                                         |
+| `FLY_API_TOKEN`, `EXPO_TOKEN`, `CI_PERSONAL_ACCESS_TOKEN`      | GitHub secrets                |                                                                         |
+| `FLY_APP`, `PUBLIC_URL`, `EAS_PROJECT_ID`, `IOS_BUNDLE_ID`     | GitHub variables              |                                                                         |
+| `IOS_RELEASE`                                                  | GitHub variable               | `true` once Apple credentials are in EAS; gates the mobile deploy job   |
 
 The iOS build's own config (`EXPO_PUBLIC_API_URL`) lives in `apps/mobile/eas.json` under
 `build.production.env`, not in GitHub variables: EAS build servers only see that env, and the deploy job loads the
 same values so its fingerprint and `eas update` match the build.
+
+**App ↔ domain association.** Password managers only offer `traitengineer.com` logins inside the iOS app when
+the app and the domain vouch for each other: the app carries `webcredentials:<host>` in its Associated Domains
+entitlement (`apps/mobile/app.config.ts`, derived from `EXPO_PUBLIC_API_URL`), and the API serves
+`/.well-known/apple-app-site-association` listing `<APPLE_TEAM_ID>.<IOS_BUNDLE_ID>`. Apple's CDN caches the file,
+so changes can take a day to reach devices. The entitlement is native, so adding or changing it needs a new build
+(the deploy job sees the fingerprint change and builds). Android's equivalent is `assetlinks.json`.
 
 `auto_stop_machines` is off and `min_machines_running = 1`: the reminder worker shares the process, so a
 machine must always be running for reminders to fire.
