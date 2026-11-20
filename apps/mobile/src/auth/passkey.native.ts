@@ -11,3 +11,10 @@ export async function signInWithPasskey(): Promise<void> {
 export async function addPasskey(_name: string): Promise<void> {
   throw new Error("Passkeys are available in the web app for now.");
 }
+
+export class SessionNotFreshError extends Error {
+  constructor() {
+    super("Confirm it's you to add a passkey.");
+    this.name = "SessionNotFreshError";
+  }
+}

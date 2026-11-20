@@ -12,7 +12,17 @@ export async function signInWithPasskey(): Promise<void> {
   if (res?.error) throw new Error(res.error.message ?? "Passkey sign-in failed");
 }
 
+/** Registering a passkey needs a session signed in within the last day; confirm who you are, then retry. */
+export class SessionNotFreshError extends Error {
+  constructor() {
+    super("Confirm it's you to add a passkey.");
+    this.name = "SessionNotFreshError";
+  }
+}
+
 export async function addPasskey(name: string): Promise<void> {
   const res = await client.passkey.addPasskey({ name });
+  if (res?.error && "code" in res.error && res.error.code === "SESSION_NOT_FRESH")
+    throw new SessionNotFreshError();
   if (res?.error) throw new Error(res.error.message ?? "Could not add passkey");
 }
