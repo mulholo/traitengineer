@@ -53,6 +53,10 @@ test("every screen renders on web (screenshots for docs/screenshots)", async ({ 
   await expect(page.getByTestId("reminder-card")).toHaveCount(1);
   await shot(page, project, "09-reminders");
 
+  await page.goto("/meditations");
+  await expect(page.getByTestId("meditation-row")).toHaveCount(6);
+  await shot(page, project, "09b-meditations");
+
   await page.goto("/settings");
   await expect(page.getByTestId("screen-settings")).toBeVisible();
   await expect(page.getByText(`Signed in as ${email}`)).toBeVisible();
@@ -79,7 +83,7 @@ test("every tappable control is at least 44px", async ({ page, request }) => {
   const { email, token } = await createUser(request);
   await seedData(request, token);
   await signIn(page, email);
-  for (const path of ["/", "/targets", "/reminders", "/settings"]) {
+  for (const path of ["/", "/targets", "/reminders", "/meditations", "/settings"]) {
     await page.goto(path);
     await page.waitForLoadState("networkidle");
     const small = await page
