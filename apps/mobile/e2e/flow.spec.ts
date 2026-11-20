@@ -102,3 +102,21 @@ test("an entry logged offline survives a reload and syncs once (persisted mutati
     expect(body.items).toHaveLength(1);
   }).toPass({ timeout: 15_000 });
 });
+
+test("sign out leaves the app and lands on sign-in without a reload", async ({ page, request }) => {
+  const { email } = await createUser(request);
+  await signIn(page, email);
+
+  await page.getByRole("link", { name: "Settings" }).first().click();
+  await page.getByTestId("sign-out").click();
+
+  await expect(page).toHaveURL(/\/sign-in/);
+  await expect(page.getByTestId("screen-sign-in")).toBeVisible();
+
+  // Signed out for real: the app shell is gone and going back to it bounces to sign-in.
+  await page.goto("/");
+  await expect(page.getByTestId("screen-sign-in")).toBeVisible();
+
+  // And signing straight back in still works.
+  await signIn(page, email);
+});
