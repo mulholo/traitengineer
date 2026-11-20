@@ -95,6 +95,7 @@ Settings → Secrets and variables → Actions. The deploy workflow skips each p
 | `CI_PERSONAL_ACCESS_TOKEN`        | secret   | Smoke test `GET /v1/me` after deploy (a `read`-scoped TE token)                   |
 | `EXPO_TOKEN`                      | secret   | EAS update / build / submit                                                       |
 | `CLAUDE_CODE_OAUTH_TOKEN`         | secret   | Claude Code GitHub Action for issues labelled `agent`                             |
+| `AUTO_UPDATE_TOKEN`               | secret   | `auto-update.yml` updates queued auto-merge PRs from `main` (see Merging PRs)     |
 | `NEON_API_KEY`, `NEON_PROJECT_ID` | secret   | M8 preview branches                                                               |
 | `FLY_APP`                         | variable | Fly app name (default `traitengineer`); previews are `<FLY_APP>-pr-<n>`           |
 | `FLY_ORG`                         | variable | Fly org for preview apps (default `personal`)                                     |
@@ -102,6 +103,15 @@ Settings → Secrets and variables → Actions. The deploy workflow skips each p
 | `EAS_PROJECT_ID`                  | variable | From `npx eas-cli init` in `apps/mobile`                                          |
 | `IOS_BUNDLE_ID`                   | variable | Unused by CI; the bundle ID defaults to `com.mulholo.traitengineer` in app config |
 | `IOS_RELEASE`                     | variable | `true` once Apple credentials are in EAS; until then the mobile deploy job skips  |
+
+## Merging PRs
+
+`main` requires PRs to be up to date and green. Turn on auto-merge for a PR instead of updating it from `main` by
+hand (Settings → General → "Allow auto-merge" must be on). The `Auto-update PRs` workflow
+(`.github/workflows/auto-update.yml`) updates the oldest queued PR that is behind `main`, one at a time, so each PR
+is tested against the latest `main` before it merges. It needs the `AUTO_UPDATE_TOKEN` secret: a fine-grained
+personal access token for this repo only, with Contents, Pull requests and Workflows set to read and write and
+Checks set to read.
 
 ## Using the MCP server locally
 
