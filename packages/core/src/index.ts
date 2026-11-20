@@ -14,6 +14,5 @@ export * from "./services/users.ts";
 export * from "./services/reminders.ts";
 export * from "./services/devices.ts";
 export * from "./services/tokens.ts";
-export * from "./services/export.ts";
 export * from "./services/login-throttle.ts";
 export * from "./services/notifications.ts";

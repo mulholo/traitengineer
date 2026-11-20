@@ -167,7 +167,7 @@ describe("change targets, tools and entries over REST", () => {
   });
 });
 
-describe("reminders, devices, me and export", () => {
+describe("reminders, devices and me", () => {
   test("reminder lifecycle including send test", async () => {
     const { token } = await h.session();
     await h.json("POST", "/v1/devices", {
@@ -229,30 +229,5 @@ describe("reminders, devices, me and export", () => {
     });
     expect(patched.body).toMatchObject({ timezone: "America/New_York", displayName: "J" });
     expect((await h.json("PATCH", "/v1/me", { token, body: { timezone: "Mars/Olympus" } })).status).toBe(400);
-  });
-
-  test("export as JSON and Markdown", async () => {
-    const { token } = await h.session();
-    const t = await h.json("POST", "/v1/change-targets", { token, body: { title: "Exported target" } });
-    const tool = await h.json("POST", "/v1/tools", {
-      token,
-      body: { changeTargetId: t.body["id"], type: "evidence_log" },
-    });
-    await h.json("POST", "/v1/entries", {
-      token,
-      body: { toolId: tool.body["id"], clientId: uuid(), payload: { summary: "Exported entry" } },
-    });
-    const json = await h.json<{ version: number; entries: unknown[] }>("GET", "/v1/export", { token });
-    expect(json.status).toBe(200);
-    expect(json.body.version).toBe(1);
-    expect(json.body.entries).toHaveLength(1);
-    expect(json.res.headers.get("content-disposition")).toMatch(
-      /attachment; filename="traitengineer-\d{4}-\d{2}-\d{2}\.json"/,
-    );
-    const md = await h.request("GET", "/v1/export?format=markdown", { token });
-    expect(md.headers.get("content-type")).toContain("text/markdown");
-    const text = await md.text();
-    expect(text).toContain("## Exported target");
-    expect(text).toContain("Exported entry");
   });
 });

@@ -111,7 +111,7 @@ traitengineer/
 Four core tables plus support tables; tool-specific data lives in validated JSONB so new tool types need no migration.
 
 - **Conventions:** UUIDv7 primary keys generated in the app; `timestamptz` everywhere, stored UTC; `created_at` / `updated_at` on every table; soft delete via `deleted_at` where noted; every table has `user_id` with a foreign key and an index.
-- **`users`** (owned by Better Auth, extended): `email` (unique, stored lower-cased), `timezone` (IANA, default `Europe/London`), `display_name`. The password hash lives in Better Auth's `account` table for the user's credential account (see section 6); it is never returned by any API, MCP tool, export or log line.
+- **`users`** (owned by Better Auth, extended): `email` (unique, stored lower-cased), `timezone` (IANA, default `Europe/London`), `display_name`. The password hash lives in Better Auth's `account` table for the user's credential account (see section 6); it is never returned by any API, MCP tool or log line.
 - **`change_targets`:** `title` (≤ 120 chars), `old_pattern` (text), `desired_default` (text), `why` (text), `status` (`active` | `paused` | `achieved` | `archived`), `sort_order`, `archived_at`.
 - **`tools`:** `change_target_id`, `type` (from the registry), `name`, `config` (JSONB, validated by the type's config schema), `sort_order`, `deleted_at`.
 - **`entries`:** `tool_id`, `change_target_id` (denormalised for querying), `tool_type`, `payload` (JSONB, validated by the type's payload schema), `occurred_at` (when it happened; defaults to now, user-editable), `source` (`mobile` | `web` | `mcp` | `api`), `client_id` (UUID from the client, unique per user, makes creates idempotent), `deleted_at`. Index on `(user_id, change_target_id, occurred_at desc)`.
@@ -149,7 +149,6 @@ A versioned REST API under `/v1`, defined with `@hono/zod-openapi` so `/openapi.
   - `POST /v1/devices` (upsert by push token); `DELETE /v1/devices/:id`.
   - `GET|POST /v1/tokens` (personal access tokens); `DELETE /v1/tokens/:id`.
   - `GET /v1/me`; `PATCH /v1/me` (timezone, display name).
-  - `GET /v1/export?format=json|markdown` returns everything for the user.
 - **Rate limiting:** a simple in-memory per-user limit (e.g. 120 writes per minute) to catch runaway agents.
 - **Client generation:** `pnpm gen:client` builds `/openapi.json` from the app without a server and regenerates `packages/client`. CI fails if the generated output differs from what is committed.
 
@@ -179,7 +178,7 @@ Better Auth, mounted at `/api/auth/*`, is the only identity system: it issues ap
   - Scopes `read` and `write`; the consent screen states which.
   - Verify end to end by adding the server as a custom connector in Claude (human step, section 16).
 - **Test mode:** when `NODE_ENV=test`, a test-only route `POST /api/test/session` returns a session for a seeded user. It must not exist in production builds; a test asserts that.
-- **Auth tests:** sign-up is refused; a second user cannot be created through any route; unknown email and wrong password are indistinguishable; the rate limit triggers and resets; the password hash never appears in any API, MCP or export response; password change revokes other sessions.
+- **Auth tests:** sign-up is refused; a second user cannot be created through any route; unknown email and wrong password are indistinguishable; the rate limit triggers and resets; the password hash never appears in any API or MCP response; password change revokes other sessions.
 - **Authorisation:** every core service method takes a `userId` and every repository query filters by it. An integration test proves user A cannot read or change user B's rows through REST or MCP.
 
 ## 7. MCP server
@@ -230,7 +229,7 @@ One Expo Router app for iOS, Android and web, built around logging an entry in t
   - `/targets`: list with status filter; `/targets/new`; `/targets/[id]` showing what/why, tools, weekly-count bar chart for the last 12 weeks, and the entry timeline; `/targets/[id]/edit`.
   - `/entries/[id]`: view, edit, delete.
   - `/reminders`: list, create from presets, enable toggle, "send test".
-  - `/settings`: account, change password, passkeys, active sessions, time zone, devices, personal access tokens, export (share sheet), sign out.
+  - `/settings`: account, change password, passkeys, active sessions, time zone, devices, personal access tokens, sign out.
 - **Data layer:**
   - TanStack Query using the generated client.
   - The query cache is persisted (MMKV on native, `localStorage` on web) so the app opens instantly with last-known data.
@@ -257,9 +256,9 @@ The web client is the Expo app's web export, served by the API server from the s
 - Push notifications are not supported on web in v1.
 - A dedicated web app (Vite or Next.js) is out of scope until the Expo web build proves insufficient. That decision requires an ADR.
 
-## 11. Persistence, migrations, backups and export
+## 11. Persistence, migrations and backups
 
-Neon Postgres is the system of record. Point-in-time recovery plus manual exports protect against losing either the phone or the provider. (The nightly GitHub archive was removed as overkill; ADR 0033.)
+Neon Postgres is the system of record. Neon point-in-time recovery is the backup. (The nightly GitHub archive was removed as overkill, ADR 0033; the export endpoint and restore script were removed, ADR 0034.)
 
 - **Schema:** Drizzle schema in `packages/db/src/schema/`. Migrations are generated with `drizzle-kit generate`, committed, and never edited after merge.
 - **Migrations run** as a Fly release command before new machines start. A failed migration aborts the deploy.
@@ -337,8 +336,7 @@ Nine milestones, built in order. M0–M5 run fully locally with no accounts; M6 
    - Accept: DST and exactly-once tests pass; a reminder fires to a dev build locally with a real Expo push token (human verifies on device).
 7. **M6 Deploy.** Dockerfile (multi-stage, builds the web export), `fly.toml` with release command, Neon wiring, EAS config, deploy workflow, `docs/deploy.md`.
    - Accept: production is reachable; smoke tests pass; a TestFlight build is installable; an OTA update reaches it.
-8. **M7 Resilience.** Export endpoint and share sheet, ~~nightly archive job~~ (removed, ADR 0033), restore script and its CI test.
-   - Accept: ~~the archive repo receives a commit;~~ restore round trip passes in CI.
+8. **M7 Resilience.** ~~Export endpoint and share sheet, nightly archive job, restore script and its CI test~~ (archive removed, ADR 0033; export and restore removed, ADR 0034).
 9. **M8 Preview environments (optional).** Neon branch, Fly preview app and EAS preview channel per PR, with teardown.
    - Accept: a PR shows working preview links; closing it deletes the resources.
 
