@@ -67,7 +67,7 @@ describe("reminders", () => {
     await h.services.devices.register(u, { expoPushToken: TOKEN(2), platform: "ios" });
     await h.services.devices.remove(u, a.id);
     const before = h.pushed.length;
-    expect(await h.services.reminders.sendTest(u, r.id)).toEqual({ devices: 1 });
+    expect(await h.services.reminders.sendTest(u, r.id)).toEqual({ devices: 1, failed: 0, errors: [] });
     const sent = h.pushed.slice(before);
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({
@@ -75,6 +75,27 @@ describe("reminders", () => {
       data: { url: `traitengineer://log/${tool.id}` },
       categoryId: "log_evidence",
     });
+  });
+
+  test("sendTest reports refusals, keeps tickets for receipts, and disables gone devices", async () => {
+    const u = await h.newUser();
+    const r = await h.services.reminders.create(u, {
+      title: "Log it",
+      schedule: { type: "daily", time: "08:00" },
+    });
+    const [gone, live] = [TOKEN(11), TOKEN(12)];
+    await h.services.devices.register(u, { expoPushToken: gone, platform: "ios" });
+    const kept = await h.services.devices.register(u, { expoPushToken: live, platform: "ios" });
+    h.push.failTokens.add(gone);
+    expect(await h.services.reminders.sendTest(u, r.id)).toEqual({
+      devices: 2,
+      failed: 1,
+      errors: ["DeviceNotRegistered"],
+    });
+    const active = (await h.services.devices.list(u)).filter((d) => d.disabledAt === null);
+    expect(active.map((d) => d.id)).toEqual([kept.id]);
+    const tickets = await h.handle.db.query.pushTickets.findMany();
+    expect(tickets.filter((t) => t.expoPushToken === live)).toHaveLength(1);
   });
 });
 

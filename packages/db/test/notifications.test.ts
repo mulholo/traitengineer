@@ -143,7 +143,7 @@ describe("push.receipts", () => {
     expect(h.pushed.length - before).toBe(2);
 
     // Too soon: tickets younger than a minute are left alone.
-    expect(await h.services.notifications.checkReceipts()).toEqual({ checked: 0, disabled: 0 });
+    expect(await h.services.notifications.checkReceipts()).toEqual({ checked: 0, disabled: 0, errors: [] });
 
     h.clock.now = new Date("2026-10-14T07:50:00Z");
     // Receipts for the tickets just issued (ids are sequential in the stub): one gone, one ok.
@@ -161,6 +161,7 @@ describe("push.receipts", () => {
     const result = await h.services.notifications.checkReceipts();
     expect(result.disabled).toBe(1);
     expect(result.checked).toBeGreaterThanOrEqual(2);
+    expect(result.errors).toContain("gone");
     const active = (await h.services.devices.list(u)).filter((d) => d.disabledAt === null);
     expect(active).toHaveLength(1);
     // Checked tickets are not checked again.
