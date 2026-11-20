@@ -5,6 +5,7 @@ import { authFetch } from "../src/api/client";
 import { currentOAuthQuery, goTo } from "../src/auth/oauth";
 import { passkeysSupported, signInWithPasskey } from "../src/auth/passkey";
 import { useAuth } from "../src/auth/session";
+import { signInErrorMessage } from "../src/auth/sign-in-error";
 import { Body, Button, ErrorText, Heading, Masthead, Screen, TextField } from "../src/ui";
 
 /** Email + password, and a passkey button where supported. No sign-up and no "forgot password" (single owner). */
@@ -37,12 +38,7 @@ export default function SignIn() {
       await signIn(email.trim(), password);
       await afterSignIn();
     } catch (e) {
-      // Same message for unknown email and wrong password; the server does not distinguish them either.
-      setError(
-        new Error(
-          e instanceof Error && /too many/i.test(e.message) ? e.message : "Email or password is incorrect.",
-        ),
-      );
+      setError(new Error(signInErrorMessage(e)));
     } finally {
       setBusy(false);
     }

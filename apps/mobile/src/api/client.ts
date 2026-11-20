@@ -31,7 +31,8 @@ export async function authFetch<T = unknown>(
   init: { method?: string; body?: unknown } = {},
 ): Promise<T> {
   const token = await getSessionToken();
-  const res = await fetch(`${apiBaseUrl()}/api/auth${path}`, {
+  const url = `${apiBaseUrl()}/api/auth${path}`;
+  const res = await fetch(url, {
     method: init.method ?? (init.body === undefined ? "GET" : "POST"),
     credentials: "include",
     headers: {
@@ -41,7 +42,16 @@ export async function authFetch<T = unknown>(
     ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
   });
   const text = await res.text();
-  const json: unknown = text ? JSON.parse(text) : null;
+  let json: unknown = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    // Not the API: typically the Expo dev server, which answers any path with index.html and a 200.
+    throw new Error(
+      `Expected JSON from ${url} but got ${res.headers.get("content-type") ?? "something else"} (HTTP ${res.status}). ` +
+        "Is EXPO_PUBLIC_API_URL pointing at the API?",
+    );
+  }
   if (!res.ok) {
     const message =
       (json as { message?: string; detail?: string } | null)?.message ??
