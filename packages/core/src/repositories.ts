@@ -9,7 +9,6 @@ import type { SortKey, TimeKey } from "./cursor.ts";
 export interface User {
   id: string;
   email: string;
-  displayName: string;
   timezone: string;
   createdAt: string;
   updatedAt: string;
@@ -17,7 +16,7 @@ export interface User {
 
 export interface UserRepository {
   get(userId: string): Promise<User | null>;
-  update(userId: string, patch: Partial<Pick<User, "displayName" | "timezone">>): Promise<User | null>;
+  update(userId: string, patch: Partial<Pick<User, "timezone">>): Promise<User | null>;
 }
 
 export interface NewChangeTarget {
