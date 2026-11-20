@@ -5,7 +5,7 @@ output) is served by `@te/api` from the same origin, so web uses the session coo
 
 - **Imports:** `@te/contracts` and `@te/client` only from the workspace (dependency-cruiser enforces this).
 - **Routes (`app/`):** `sign-in`, `consent` (OAuth for MCP clients), `(app)/` (Tabs: `index` Today, `targets/…`
-  Stack, `reminders`, `settings`, hidden `entries/[id]`), `log/[toolId]` (modal; `log/recent` = last-used tool,
+  Stack, `reminders`, `meditations`, `settings`, hidden `entries/[id]`), `log/[toolId]` (modal; `log/recent` = last-used tool,
   used by the "Log evidence" home-screen quick action).
 - **Layout:** `src/ui/AppShell.tsx` — custom tab bar: bottom bar below 768px, left sidebar at ≥768px.
 - **Data:** TanStack Query via the generated client (`src/api/client.ts`). Cache and paused mutations persist to
@@ -25,6 +25,8 @@ output) is served by `@te/api` from the same origin, so web uses the session coo
   because EAS fingerprints without git metadata. Every Babel preset/plugin named in `babel.config.js` (or named
   as a string by a preset, e.g. NativeWind's `@babel/plugin-transform-react-jsx`) must be a direct dependency:
   `eas update` and the Xcode bundling phase run Expo without pnpm's `NODE_PATH`, so hoisted packages aren't found.
+- **Meditations:** a hard-coded list of links in `src/features/meditations/links.ts` (no API or DB); edit that
+  constant to add one. Every link needs a title; rows open the URL with `Linking.openURL`.
 - **Platform code:** `*.native.ts` / `*.ts` (web) pairs in `src/platform/` and `src/auth/passkey*`.
 - **Tools:** `src/tools/<type>/{QuickLogForm,EntryCard}.tsx`, registered in `src/tools/index.ts` as a complete
   `Record<ToolType, ToolUi>` (typecheck fails if a registry type has no UI).
