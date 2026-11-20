@@ -33,7 +33,8 @@ output) is served by `@te/api` from the same origin, so web uses the session coo
 - **Design:** the "catalog" language — ruled tables, no cards/radii/pills, system font; light = printed parts
   catalog, dark = amber terminal. Rules and table primitives in `src/ui/catalog.tsx`; shared controls in
   `src/ui/index.tsx`; colour tokens (`paper`, `ink`, `dim`, `rule`, `rule-strong`, `band`, `link`, `mark`,
-  `alert`) in `global.css` + `tailwind.config.js`. Every control ≥44pt with an accessibility label (an e2e test
+  `alert`) in `global.css` + `tailwind.config.js`. A page with more than one section wraps them in `Sections`
+  (32px apart) and titles each with `Section` (grey band); a one-table page (Targets, Reminders) has no section title. Every control ≥44pt with an accessibility label (an e2e test
   measures it). Every screen must render on web.
 - **Commands:** `pnpm --filter @te/mobile web` (dev; talks to the API on :3000 of the same host unless `EXPO_PUBLIC_API_URL` is set),
   `pnpm --filter @te/mobile build` (web export to `dist/web`), `pnpm --filter @te/mobile test` (jest-expo),

@@ -26,22 +26,14 @@ import {
   Heading,
   RowAction,
   Screen,
+  Section,
+  Sections,
   Segmented,
   TableAction,
   TableHead,
   TableNote,
   TextField,
 } from "../../src/ui";
-
-/** A settings area: a grey band, then its lines, table or form. */
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <View>
-      <Heading level={2}>{title}</Heading>
-      {children}
-    </View>
-  );
-}
 
 /** A form under a band: fields stacked, the submit button last and left-aligned. */
 function Form({ children }: { children: ReactNode }) {
@@ -388,21 +380,26 @@ function Tokens() {
   );
 }
 
-/** Settings: one page of sections, each a band over a spec line, a table with its actions, or a short form. */
+/**
+ * Settings: one page of sections, each a band over a spec line, a table with its actions, or a short form; the
+ * sections sit a section gap apart, with Sign out last.
+ */
 export default function Settings() {
   const { signOut } = useAuth();
   return (
     <Screen narrow testID="screen-settings">
       <Heading hidden>Settings</Heading>
-      <Account />
-      <Password />
-      <Passkeys />
-      <Sessions />
-      <Devices />
-      <Tokens />
-      <View className="items-start border-t border-rule px-2 pt-3">
-        <Button label="Sign out" variant="danger" onPress={() => void signOut()} testID="sign-out" />
-      </View>
+      <Sections>
+        <Account />
+        <Password />
+        <Passkeys />
+        <Sessions />
+        <Devices />
+        <Tokens />
+        <View className="items-start border-t border-rule px-2 pt-3">
+          <Button label="Sign out" variant="danger" onPress={() => void signOut()} testID="sign-out" />
+        </View>
+      </Sections>
     </Screen>
   );
 }

@@ -11,6 +11,8 @@ import {
   Heading,
   Loading,
   Screen,
+  Section,
+  Sections,
   TableAction,
   TableHead,
   TableNote,
@@ -39,7 +41,10 @@ const COL = {
 };
 const ROW_GAP = "gap-2 md:gap-3";
 
-/** Today: active targets with one-tap Log buttons and days since last entry, then today's entries. */
+/**
+ * Today: two sections, each under its band: active targets with one-tap Log buttons and days since last entry,
+ * then today's entries.
+ */
 export default function Today() {
   const targets = useTargets("active");
   const tools = useTools();
@@ -60,45 +65,46 @@ export default function Today() {
     <Screen testID="screen-today">
       <Heading hidden>Today</Heading>
       <ErrorText error={targets.error} />
-      <View>
-        <TableHead className={ROW_GAP}>
-          <View className={COL.main}>
-            <ColumnHead className={COL.target}>Target</ColumnHead>
-            <ColumnHead className={`hidden md:flex ${COL.since}`}>Last entry</ColumnHead>
-          </View>
-          <ColumnHead className={COL.log}>Log</ColumnHead>
-        </TableHead>
-        {targets.data && active.length === 0 ? (
-          <>
-            <TableNote>No active change targets.</TableNote>
-            <TableAction label="Create your first target" onPress={() => router.push("/targets/new")} />
-          </>
-        ) : null}
-        {active.map((target) => (
-          <TargetRow
-            key={target.id}
-            target={target}
-            tools={toolsByTarget.get(target.id) ?? []}
-            since={daysSince(lastByTarget.get(target.id))}
-          />
-        ))}
-      </View>
-      <View>
-        <Heading level={2}>Today's entries</Heading>
-        <EntryHead />
-        {today.data?.items.length === 0 ? <TableNote>Nothing logged yet today.</TableNote> : null}
-        {today.data?.items.map((entry) => {
-          const ui = uiFor(entry.toolType);
-          return ui ? (
-            <ui.EntryCard
-              key={entry.id}
-              entry={entry}
-              toolName={toolName.get(entry.toolId)}
-              onPress={() => router.push(`/entries/${entry.id}`)}
+      <Sections>
+        <Section title="Active targets">
+          <TableHead className={ROW_GAP}>
+            <View className={COL.main}>
+              <ColumnHead className={COL.target}>Target</ColumnHead>
+              <ColumnHead className={`hidden md:flex ${COL.since}`}>Last entry</ColumnHead>
+            </View>
+            <ColumnHead className={COL.log}>Log</ColumnHead>
+          </TableHead>
+          {targets.data && active.length === 0 ? (
+            <>
+              <TableNote>No active change targets.</TableNote>
+              <TableAction label="Create your first target" onPress={() => router.push("/targets/new")} />
+            </>
+          ) : null}
+          {active.map((target) => (
+            <TargetRow
+              key={target.id}
+              target={target}
+              tools={toolsByTarget.get(target.id) ?? []}
+              since={daysSince(lastByTarget.get(target.id))}
             />
-          ) : null;
-        })}
-      </View>
+          ))}
+        </Section>
+        <Section title="Today's entries">
+          <EntryHead />
+          {today.data?.items.length === 0 ? <TableNote>Nothing logged yet today.</TableNote> : null}
+          {today.data?.items.map((entry) => {
+            const ui = uiFor(entry.toolType);
+            return ui ? (
+              <ui.EntryCard
+                key={entry.id}
+                entry={entry}
+                toolName={toolName.get(entry.toolId)}
+                onPress={() => router.push(`/entries/${entry.id}`)}
+              />
+            ) : null;
+          })}
+        </Section>
+      </Sections>
     </Screen>
   );
 }
