@@ -16,6 +16,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
  * - Never use `dark:` classes: dark mode comes only from the token values in global.css. (With darkMode "media",
  *   NativeWind 4's web runtime throws "Cannot manually set color scheme" as soon as one `dark:` class exists.)
  * - Pages don't repeat their name from the navigation; the page's subject (a target, an entry) is its heading.
+ * - A page that is one table (Targets, Reminders) has no section title. A page with more than one section
+ *   wraps them in `Sections` and gives each a `Section` title on a grey band; sections sit 32px apart, twice
+ *   the 16px between blocks inside a page, and rows within a section are ruled with no gap.
  * - An action that adds to a table is the table's last row ("+ New target").
  * - Controls keep the 44pt minimum: the density comes from the content, not from smaller targets.
  */

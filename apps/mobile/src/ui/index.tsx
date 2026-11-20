@@ -84,6 +84,33 @@ export function Heading({
   );
 }
 
+/**
+ * A page's sections, stacked. Sections sit twice as far apart (32px) as the blocks inside a page or a section
+ * (16px), so each reads as its own block while its rows stay ruled and tight. Use it whenever a page has more
+ * than one section; a page that is one table (Targets, Reminders) needs neither this nor a section title.
+ */
+export function Sections({ children }: { children: ReactNode }) {
+  return <View className="gap-8">{children}</View>;
+}
+
+/** One section: its title on a grey band (a level-2 heading), then its table, lines or form. */
+export function Section({
+  title,
+  children,
+  testID,
+}: {
+  title: string;
+  children: ReactNode;
+  testID?: string;
+}) {
+  return (
+    <View testID={testID}>
+      <Heading level={2}>{title}</Heading>
+      {children}
+    </View>
+  );
+}
+
 export function Body(props: {
   children: ReactNode;
   muted?: boolean | undefined;
