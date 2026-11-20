@@ -57,8 +57,10 @@ jobs:
           context: .
           load: true
           tags: traitengineer:ci
+          # PRs read the layer cache that main writes. Only main writes it: exporting took ~2 minutes per run, and
+          # PR-scoped caches are never read by other branches anyway.
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max' || '' }}
       - name: Release command (migrations) runs in the image
         run: docker run --rm -e PGLITE_DIR=/tmp/pglite traitengineer:ci node packages/db/src/cli/migrate.ts
       - name: Boot and smoke test
