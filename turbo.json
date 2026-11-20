@@ -4,28 +4,21 @@
   "globalPassThroughEnv": ["TMPDIR"],
   "tasks": {
     "//#typecheck": {
-      "inputs": [
-        "tsconfig.json",
-        "apps/*/tsconfig.json",
-        "packages/*/tsconfig.json",
-        "apps/*/src/**",
-        "apps/*/test/**",
-        "packages/*/src/**",
-        "packages/*/test/**",
-        "packages/config/*"
-      ],
       "outputs": []
     },
     "//#lint": {},
     "//#format:check": {},
     "//#boundaries": {},
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
     "test": {
-      "dependsOn": [],
+      "dependsOn": ["^transit"],
       "outputs": [],
       "env": ["NODE_ENV"]
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "^transit"],
       "outputs": ["dist/**"]
     },
     "e2e": {

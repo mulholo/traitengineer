@@ -68,6 +68,12 @@ Business logic lives in `core`; REST, MCP and jobs are thin adapters. `apps/api`
 - `AGENTS.md` files are updated when conventions or commands change.
 - Milestones add an entry to `docs/progress.md`.
 
+## Merging
+
+PRs must be up to date with `main` and pass CI. Turn on auto-merge (squash) rather than merging `main` into the
+branch by hand: `.github/workflows/auto-update.yml` updates queued PRs from `main` one at a time and auto-merge
+merges each once it is green. Only update a branch yourself to resolve a conflict.
+
 ## Never
 
 - Commit secrets (use `.env`, which is gitignored; placeholders go in `.env.example`).
