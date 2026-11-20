@@ -20,8 +20,9 @@ values go into Fly secrets (`fly secrets set`), CI values into GitHub Actions se
 ### 1. GitHub repo (M0)
 
 1. Create the repo `traitengineer` and push this repo to it (`git remote add origin ... && git push -u origin main`).
-2. Repo settings for `traitengineer`: protect `main` (require the `CI / check` status), allow squash merge
-   only, install the Renovate GitHub app for this repo.
+2. Repo settings for `traitengineer`: protect `main` with a ruleset that requires the `check`, `e2e` and `docker`
+   status checks and branches to be up to date before merging; allow squash merge only; install the Renovate
+   GitHub app for this repo.
 
 ### 2. Neon (M6)
 
