@@ -27,6 +27,10 @@ export const MEDITATIONS: readonly Meditation[] = [
     title: "Drop anchor (11 minutes)",
     url: "https://drive.google.com/file/d/1BWsl48YONpRspvD9ruEFyR8rCaA9MJCq/view?usp=sharing",
   },
+  {
+    title: "The RAIN of Self Compassion with Tara Brach",
+    url: "https://www.youtube.com/watch?v=wm1t5FyK5Ek",
+  },
 ];
 
 export interface Meditation {
