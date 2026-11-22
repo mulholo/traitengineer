@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { MEDITATIONS } from "../src/features/meditations/links";
 import { createUser, seedData, signIn } from "./helpers";
 
 const OUT = "../../docs/screenshots";
@@ -54,7 +55,7 @@ test("every screen renders on web (screenshots for docs/screenshots)", async ({ 
   await shot(page, project, "09-reminders");
 
   await page.goto("/meditations");
-  await expect(page.getByTestId("meditation-row")).toHaveCount(6);
+  await expect(page.getByTestId("meditation-row")).toHaveCount(MEDITATIONS.length);
   await shot(page, project, "09b-meditations");
 
   await page.goto("/settings");
